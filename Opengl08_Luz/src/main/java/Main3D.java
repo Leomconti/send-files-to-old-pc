@@ -212,7 +212,7 @@ public class Main3D {
 		// Make the window visible
 		glfwShowWindow(window);
 		
-	    createEnemies();
+    createEnemies();
 	}
 	
 	private void createEnemies() {
@@ -272,21 +272,7 @@ public class Main3D {
 		
 		umcubo = new Cubo3D(0.0f, 0.0f, 0.8f, 0.1f);
 		umcubo.model = vboc;
-		
-//		for(int i = 0; i < 100; i++) {
-//			//Cubo3D cubo = new Cubo3D(rnd.nextFloat()*2-1,rnd.nextFloat()*2-1, rnd.nextFloat()*2-1, rnd.nextFloat()*0.005f+0.0001f);
-//			//cubo.model = x35;
-//			Cubo3D cubo = new Cubo3D(rnd.nextFloat()*2-1,rnd.nextFloat()*2-1, rnd.nextFloat()*2-1, rnd.nextFloat()*0.1f+0.05f);
-//			cubo.model = vboc;
-//			cubo.vx = rnd.nextFloat()*0.4f-0.2f;
-//			cubo.vy = rnd.nextFloat()*0.4f-0.2f;
-//			cubo.vz = rnd.nextFloat()*0.4f-0.2f;
-//			cubo.rotvel = rnd.nextFloat()*9;
-//			listaObjetos.add(cubo);
-//		}
-		
-		//BufferedImage gatorgba = new BufferedImage(imggato.getWidth(), imggato.getHeight(), BufferedImage.TYPE_INT_ARGB);
-		//gatorgba.getGraphics().drawImage(imggato, 0, 0, null);
+
 		
 		BufferedImage imggato = TextureLoader.loadImage("texturaGato.jpeg");
 		Constantes.tgato = TextureLoader.loadTexture(imggato);
@@ -315,13 +301,7 @@ public class Main3D {
 		long lasttime = System.currentTimeMillis();
 
 		float angle = 0;
-		
-//		glMatrixMode(GL_PROJECTION);
-//		glLoadIdentity();
-//		gluPerspective(45, 600f / 800f, 0.5f, 100);
-//		glMatrixMode(GL_MODELVIEW);
-//		glLoadIdentity();
-		
+
 		
 		long ultimoTempo = System.currentTimeMillis();
 		while (!glfwWindowShouldClose(window)) {
@@ -419,16 +399,6 @@ public class Main3D {
 		transf.translate(new Vector3f(1,1,0));
 		view.mul(transf,view, view);
 		
-//		float migx = cameraPos.x+cameraVectorFront.x*-2;
-//		float migy = cameraPos.y+cameraVectorFront.y*-2;
-//		float migz = cameraPos.z+cameraVectorFront.z*-2;
-//		
-//		m29.x = migx;
-//		m29.y = migy;
-//		m29.z = migz;
-		
-		//view.mul(view, cameraMatrix, view);
-		//view.translate(new Vector3f(-cameraPos.x,-cameraPos.y,-cameraPos.z));
 		
 		m29.raio = 0.01f;
 		m29.Front = cameraVectorFront;
@@ -439,11 +409,7 @@ public class Main3D {
 		m29.z = cameraPos.z - cameraVectorFront.z*2;
 		
 		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
-		
-		//System.out.println(""+cameraVectorFront);
-		//System.out.println(""+m29.x+" "+m29.y+" "+m29.z);
-		//m29.y = -0.5f;		
-		
+
 		
 		if(FIRE&&tirotimer>=100) {
 			float velocidade_projetil = 14;
@@ -477,12 +443,32 @@ public class Main3D {
 		for(int i = 0; i < listaObjetos.size();i++) {
 			Object3D obj = listaObjetos.get(i);
 			obj.SimulaSe(diftime);
-			if(obj.vivo==false) {
-				listaObjetos.remove(i);
-				i--;
-			}
-		}
+
+      if (obj instanceof Projetil) {
+      // check if projectile colidiu com algum dos inimigos, sera que vai lagar ??
+          Projetil projetil = (Projetil) obj;
+          for (int j = 0; j < listaObjetos.size(); j++) {
+              Object3D target = listaObjetos.get(j);
+              if (target instanceof Enemy && checkCollision(projetil, target)) {
+                  projetil.vivo = false;
+                  target.vivo = false;
+                  break;
+              }
+          }
+      }
+  }
+
+    // aray list tem esse rmove if bem neat
+    listaObjetos.removeIf(obj -> !obj.vivo);
 	}
+
+  private boolean checkCollision(Object3D obj1, Object3D obj2){
+    float dx = obj1.x - obj2.x;
+    float dy = obj1.y - obj2.y;
+    float dz = obj1.z - obj2.z;
+    float distance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+    return distance < (obj1.raio + obj2.raio);
+  }
 
 	private void gameRender() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
@@ -519,12 +505,6 @@ public class Main3D {
 		int loctexture = glGetUniformLocation(shader.programID, "tex");
 		glUniform1i(loctexture, 0);
 		
-		//view.setIdentity();
-		//view.scale(new Vector3f(scale,scale,scale));
-		//view.rotate(viewAngX*0.0174532f, new Vector3f(1,0,0));
-		//view.rotate(viewAngY*0.0174532f, new Vector3f(0,1,0));
-		//view.translate(new Vector3f(0,0,0));
-		
 		int viewlocation = glGetUniformLocation(shader.programID, "view");
 		view.storeTranspose(matrixBuffer);
 		matrixBuffer.flip();
@@ -532,16 +512,6 @@ public class Main3D {
 		
 		Constantes.mapa.DesenhaSe(shader);
 		umcubo.DesenhaSe(shader);		
-		
-		
-//		viewlocation = glGetUniformLocation(shader.programID, "view");
-//		Matrix4f mvn = new Matrix4f();
-//		mvn.setIdentity();
-//		mvn.storeTranspose(matrixBuffer);
-//		matrixBuffer.flip();
-//		glUniformMatrix4fv(viewlocation, false, matrixBuffer);
-		
-
 		
 		glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
 		m29.DesenhaSe(shader);
