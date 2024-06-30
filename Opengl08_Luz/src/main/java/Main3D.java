@@ -186,8 +186,9 @@ public class Main3D {
 				if ( key == GLFW_KEY_SPACE) {
 					FIRE = false;
 				}
-			}
-		});
+		};
+      createEnemies();
+    };
 
 		// Get the thread stack and push a new frame
 		try (MemoryStack stack = stackPush()) {
@@ -237,7 +238,6 @@ public class Main3D {
 		// creates the GLCapabilities instance and makes the OpenGL
 		// bindings available for use.
 		// M3 - criar os inimigos
-		createEnemies();
 		GL.createCapabilities();
 
 		view.setIdentity();
