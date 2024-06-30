@@ -187,8 +187,7 @@ public class Main3D {
 					FIRE = false;
 				}
 		};
-      createEnemies();
-    };
+    });
 
 		// Get the thread stack and push a new frame
 		try (MemoryStack stack = stackPush()) {
@@ -212,6 +211,8 @@ public class Main3D {
 
 		// Make the window visible
 		glfwShowWindow(window);
+		
+	    createEnemies();
 	}
 	
 	private void createEnemies() {
