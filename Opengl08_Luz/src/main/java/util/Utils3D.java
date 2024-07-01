@@ -130,4 +130,14 @@ public class Utils3D {
 
 		return m;
 	}
+	
+	public static Vector4f transformVector(Matrix4f matrix, Vector4f vector) {
+        Vector4f result = new Vector4f();
+        result.x = matrix.m00 * vector.x + matrix.m10 * vector.y + matrix.m20 * vector.z + matrix.m30 * vector.w;
+        result.y = matrix.m01 * vector.x + matrix.m11 * vector.y + matrix.m21 * vector.z + matrix.m31 * vector.w;
+        result.z = matrix.m02 * vector.x + matrix.m12 * vector.y + matrix.m22 * vector.z + matrix.m32 * vector.w;
+        result.w = matrix.m03 * vector.x + matrix.m13 * vector.y + matrix.m23 * vector.z + matrix.m33 * vector.w;
+        return result;
+    }
+
 }

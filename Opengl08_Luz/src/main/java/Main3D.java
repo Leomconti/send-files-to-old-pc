@@ -22,7 +22,14 @@ import obj.Projetil;
 import shaders.StaticShader;
 import util.TextureLoader;
 import util.Utils3D;
-
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
+import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 import java.awt.image.BufferedImage;
 
 //import com.sun.org.apache.xerces.internal.dom.DeepNodeListImpl;
@@ -93,12 +100,17 @@ public class Main3D {
 	
 	double angluz = 0;
 
-	private float mouseX, mouseY;
+    private float mouseX, mouseY;
     private boolean mouseLeftPressed = false;
     private boolean mouseRightPressed = false;
+    private float playerVelocity = 0.0f;
+    private float maxVelocity = 20.0f;
+    private float acceleration = 10.0f;
+    private float deceleration = 5.0f;
 
-	private float cameraOffsetY = -0.5f; // Slightly below center
+    private float cameraOffsetY = -0.5f; // Slightly below center
     private float cameraDistance = 2.0f; // Distance behind the player
+
 
 
 
@@ -146,34 +158,35 @@ public class Main3D {
 		});
 
 		glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
-			float dx = (float) xpos - mouseX;
-			float dy = (float) ypos - mouseY;
-			mouseX = (float) xpos;
-			mouseY = (float) ypos;
+            float dx = (float) xpos - mouseX;
+            float dy = (float) ypos - mouseY;
+            mouseX = (float) xpos;
+            mouseY = (float) ypos;
 
-			// Rotate camera based on mouse movement
-			float sensitivity = 0.1f;
-			viewAngY += dy * sensitivity;
-			viewAngX += dx * sensitivity;
+            // Rotate camera based on mouse movement
+            float sensitivity = 0.1f;
+            viewAngY += dx * sensitivity;
+            viewAngX += dy * sensitivity;
 
-			// Limit vertical rotation
-			viewAngX = Math.max(-90, Math.min(90, viewAngX));
+            // Limit vertical rotation
+            viewAngX = Math.max(-90, Math.min(90, viewAngX));
 
-			// Update camera vectors
-			updateCameraVectors();
-		});
+            // Update camera vectors
+            updateCameraVectors();
+        });
 
 		glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
-			if (button == GLFW_MOUSE_BUTTON_LEFT) {
-				mouseLeftPressed = (action == GLFW_PRESS);
-			} else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-				mouseRightPressed = (action == GLFW_PRESS);
-				FIRE = mouseRightPressed;
-			}
-		});
+            if (button == GLFW_MOUSE_BUTTON_LEFT) {
+                mouseLeftPressed = (action == GLFW_PRESS);
+            } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+                mouseRightPressed = (action == GLFW_PRESS);
+                FIRE = mouseRightPressed;
+            }
+        });
 
-		// Hide the cursor and capture it
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        // Hide the cursor and capture it
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 
 		// Get the thread stack and push a new frame
 		try (MemoryStack stack = stackPush()) {
@@ -339,131 +352,85 @@ public class Main3D {
 	long tirotimer = 0;
 
 	private void gameUpdate(long diftime) {
-		float vel = 5.0f;
-
-		tirotimer += diftime;
-
-		//angluz+=(Math.PI/4)*diftime/1000.0f;
-		angluz = 0;
-
-		float acceleration = 10.0f;
+		float dt = diftime / 1000.0f;
+	
+		// Update player velocity based on left mouse button
 		if (mouseLeftPressed) {
-			cameraPos.x -= cameraVectorFront.x * acceleration * diftime / 1000.0f;
-			cameraPos.y -= cameraVectorFront.y * acceleration * diftime / 1000.0f;
-			cameraPos.z -= cameraVectorFront.z * acceleration * diftime / 1000.0f;
+			playerVelocity = Math.min(playerVelocity + acceleration * dt, maxVelocity);
+		} else {
+			playerVelocity = Math.max(playerVelocity - deceleration * dt, 0);
 		}
-		
-
-
-		Matrix4f rotTmp = new Matrix4f();
-		rotTmp.setIdentity();
-		if (RIGHT) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
-		}
-		if (LEFT) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
-		}
-		if (UP) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
-		}
-		if (DOWN) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
-		}
-		if (QBu) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
-		}
-		if (EBu) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
-		}
-
-		rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
-		rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
-		rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
-
-		Utils3D.vec3dNormilize(cameraVectorFront);
-		Utils3D.vec3dNormilize(cameraVectorRight);
-		Utils3D.vec3dNormilize(cameraVectorUP);
-
-		if (FORWARD) {
-			cameraPos.x -= cameraVectorFront.x * vel * diftime / 1000.0f;
-			cameraPos.y -= cameraVectorFront.y * vel * diftime / 1000.0f;
-			cameraPos.z -= cameraVectorFront.z * vel * diftime / 1000.0f;
-			//System.out.println("UP "+diftime);
-		}
-		if (BACKWARD) {
-			cameraPos.x += cameraVectorFront.x * vel * diftime / 1000.0f;
-			cameraPos.y += cameraVectorFront.y * vel * diftime / 1000.0f;
-			cameraPos.z += cameraVectorFront.z * vel * diftime / 1000.0f;
-			//System.out.println("UP "+diftime);
-		}
-
-		Vector4f t = new Vector4f(cameraPos.dot(cameraPos, cameraVectorRight), cameraPos.dot(cameraPos, cameraVectorUP),
-				cameraPos.dot(cameraPos, cameraVectorFront), 1.0f);
-
-		view = Utils3D.setLookAtMatrix(t, cameraVectorFront, cameraVectorUP, cameraVectorRight);
-
-		Matrix4f transf = new Matrix4f();
-		transf.setIdentity();
-		transf.translate(new Vector3f(1, 1, 0));
-		view.mul(transf, view, view);
-
-		m29.raio = 0.01f;
-
-		// Update camera position to follow the player
+	
+		// Move camera based on velocity and direction
+		cameraPos.x -= cameraVectorFront.x * playerVelocity * dt;
+		cameraPos.y -= cameraVectorFront.y * playerVelocity * dt;
+		cameraPos.z -= cameraVectorFront.z * playerVelocity * dt;
+	
+		// Update player position relative to camera
 		m29.x = cameraPos.x + cameraVectorFront.x * cameraDistance;
-		m29.y = cameraPos.y + cameraVectorFront.y * cameraDistance - cameraOffsetY;
+		m29.y = cameraPos.y + cameraVectorFront.y * cameraDistance + cameraOffsetY;
 		m29.z = cameraPos.z + cameraVectorFront.z * cameraDistance;
-
-		// Update player orientation
-		m29.Front = cameraVectorFront;
-		m29.UP = cameraVectorUP;
-		m29.Right = cameraVectorRight;
-
-		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
-
-		if (FIRE && tirotimer >= 100) {
-			float velocidade_projetil = 14;
-			Projetil pj = new Projetil(m29.x + cameraVectorRight.x * 0.5f + cameraVectorUP.x * 0.2f,
-					m29.y + cameraVectorRight.y * 0.5f + cameraVectorUP.y * 0.2f,
-					m29.z + cameraVectorRight.z * 0.5f + cameraVectorUP.z * 0.2f);
-			pj.vx = -cameraVectorFront.x * velocidade_projetil;
-			pj.vy = -cameraVectorFront.y * velocidade_projetil;
-			pj.vz = -cameraVectorFront.z * velocidade_projetil;
-			pj.raio = 0.2f;
-			pj.model = vboBilbord;
-			pj.setRotation(cameraVectorFront, cameraVectorUP, cameraVectorRight);
-
-			listaObjetos.add(pj);
-
-			pj = new Projetil(m29.x - cameraVectorRight.x * 0.5f + cameraVectorUP.x * 0.2f,
-					m29.y - cameraVectorRight.y * 0.5f + cameraVectorUP.y * 0.2f,
-					m29.z - cameraVectorRight.z * 0.5f + cameraVectorUP.z * 0.2f);
-			pj.vx = -cameraVectorFront.x * velocidade_projetil;
-			pj.vy = -cameraVectorFront.y * velocidade_projetil;
-			pj.vz = -cameraVectorFront.z * velocidade_projetil;
-			pj.raio = 0.2f;
-			pj.model = vboBilbord;
-			pj.setRotation(cameraVectorFront, cameraVectorUP, cameraVectorRight);
-
-			listaObjetos.add(pj);
+	
+		// Update player rotation
+		m29.Front = new Vector4f(cameraVectorFront);
+		m29.UP = new Vector4f(cameraVectorUP);
+		m29.Right = new Vector4f(cameraVectorRight);
+	
+		// Add a slight pitch to the player model based on vertical movement
+		float pitchAngle = (float) Math.toRadians(cameraVectorFront.y * 30); // Adjust the 30 to change pitch sensitivity
+		Matrix4f pitchRotation = new Matrix4f();
+		pitchRotation.rotate(pitchAngle, new Vector3f(m29.Right.x, m29.Right.y, m29.Right.z));
+		m29.Front = Utils3D.transformVector(pitchRotation, m29.Front);
+		m29.UP = Utils3D.transformVector(pitchRotation, m29.UP);
+	
+		// Handle shooting
+		tirotimer += diftime;
+		if (mouseRightPressed && tirotimer >= 100) {
+			shootProjectile();
 			tirotimer = 0;
 		}
+	
+		// Update and remove projectiles
+		updateProjectiles(dt);
+	
+		// Check for collisions with terrain
+		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
+	
+		// Update view matrix
+		view = Utils3D.setLookAtMatrix(cameraPos, cameraVectorFront, cameraVectorUP, cameraVectorRight);
+	}
+	
 
+    private void shootProjectile() {
+		float velocidade_projetil = 14;
+		Projetil pj = new Projetil(m29.x, m29.y, m29.z);
+		pj.vx = -cameraVectorFront.x * velocidade_projetil;
+		pj.vy = -cameraVectorFront.y * velocidade_projetil;
+		pj.vz = -cameraVectorFront.z * velocidade_projetil;
+		pj.raio = 0.2f;
+		pj.model = vboBilbord;
+		pj.setRotation(cameraVectorFront, cameraVectorUP, cameraVectorRight);
+		listaObjetos.add(pj);
+	}
+	
+	private void updateProjectiles(float dt) {
 		ArrayList<Object3D> objectsToRemove = new ArrayList<>();
-
-		for (int i = 0; i < listaObjetos.size(); i++) {
-			Object3D obj = listaObjetos.get(i);
-			obj.SimulaSe(diftime);
-
+	
+		for (Object3D obj : listaObjetos) {
+			obj.SimulaSe((long)(dt * 1000));
+	
 			if (obj instanceof Projetil) {
 				Projetil projetil = (Projetil) obj;
-				for (int j = 0; j < listaObjetos.size(); j++) {
-					Object3D target = listaObjetos.get(j);
+				
+				// Remove projectile if it's too far away
+				if (Vector3f.sub(new Vector3f(projetil.x, projetil.y, projetil.z), 
+								 new Vector3f(cameraPos.x, cameraPos.y, cameraPos.z), null).lengthSquared() > 1000) {
+					objectsToRemove.add(projetil);
+					continue;
+				}
+	
+				// Check collision with enemies
+				for (Object3D target : listaObjetos) {
 					if (target instanceof Enemy && checkCollision(projetil, target)) {
 						objectsToRemove.add(projetil);
 						objectsToRemove.add(target);
@@ -472,17 +439,17 @@ public class Main3D {
 				}
 			}
 		}
-
+	
 		listaObjetos.removeAll(objectsToRemove);
 	}
-
-private boolean checkCollision(Object3D obj1, Object3D obj2) {
-    float dx = obj1.x - obj2.x;
-    float dy = obj1.y - obj2.y;
-    float dz = obj1.z - obj2.z;
-    float distance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-    return distance < (obj1.raio + obj2.raio);
-}
+	
+	private boolean checkCollision(Object3D obj1, Object3D obj2) {
+		float dx = obj1.x - obj2.x;
+		float dy = obj1.y - obj2.y;
+		float dz = obj1.z - obj2.z;
+		float distance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+		return distance < (obj1.raio + obj2.raio);
+	}
 
 	private void gameRender() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
