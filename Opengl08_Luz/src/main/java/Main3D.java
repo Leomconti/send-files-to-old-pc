@@ -77,6 +77,8 @@ public class Main3D {
 
 	boolean FIRE = false;
 	
+	boolean enemiesCreated = false;
+	
 	Matrix4f cameraMatrix = new Matrix4f();
 	
 
@@ -86,6 +88,7 @@ public class Main3D {
 	Player m29;
 	
 	double angluz = 0;
+    
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -211,15 +214,6 @@ public class Main3D {
 
 		// Make the window visible
 		glfwShowWindow(window);
-		
-    // Load enemy model
-    ObjModel enemyModel = new ObjModel();
-    enemyModel.loadObj("Mig_29_obj.obj");
-    enemyModel.load();
-
-    // Create enemies
-    createEnemies(enemyModel);
-    
 	}
 	
   private void createEnemies(ObjModel enemyModel) {
@@ -228,7 +222,7 @@ public class Main3D {
               rnd.nextFloat() * 20 - 10,
               rnd.nextFloat() * 10 + 5,
               rnd.nextFloat() * 20 - 10,
-              0.5f  // Increased size for visibility
+              0.1f  // Increased size for visibility
           );
           enemy.model = enemyModel;
           listaObjetos.add(enemy);
@@ -263,6 +257,11 @@ public class Main3D {
 		ObjModel mig29 = new ObjModel();
 		mig29.loadObj("Mig_29_obj.obj");
 		mig29.load();
+		
+		if (!enemiesCreated) {
+			createEnemies(mig29);
+			enemiesCreated = true;
+		}
 		
 		m29 = new Player(0, 0, 0, 0.01f);
 		m29.model = mig29;
