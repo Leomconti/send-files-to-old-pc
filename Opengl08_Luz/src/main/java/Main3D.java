@@ -131,9 +131,26 @@ public class Main3D {
 		// or released.
 
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
 				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+
+			if (action == GLFW_PRESS) {
+				if (key == GLFW_KEY_Q) {
+					QBu = true;
+				}
+				if (key == GLFW_KEY_E) {
+					EBu = true;
+				}
 			}
+			if (action == GLFW_RELEASE) {
+				if (key == GLFW_KEY_Q) {
+					QBu = false;
+				}
+				if (key == GLFW_KEY_E) {
+					EBu = false;
+				}
+			}
+			;
 		});
 
 		glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
@@ -322,21 +339,6 @@ public class Main3D {
 
 		Matrix4f rotTmp = new Matrix4f();
 		rotTmp.setIdentity();
-		if (RIGHT) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
-		}
-		if (LEFT) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
-		}
-		if (UP) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
-		}
-		if (DOWN) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
-		}
 		if (QBu) {
 			rotTmp.rotate(-1.0f * diftime / 1000.0f,
 					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
