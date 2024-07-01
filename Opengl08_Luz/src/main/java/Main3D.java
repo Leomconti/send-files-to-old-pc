@@ -223,9 +223,7 @@ public class Main3D {
 
 		// Make the window visible
 		glfwShowWindow(window);
-		
-		// start font renderer thingy
-		fontRenderer = new FontRenderer("ClassicShit.ttf", 24);
+
 	}
 	
   private void createEnemies(ObjModel enemyModel) {
@@ -271,7 +269,10 @@ public class Main3D {
 		mig29.load();
 		
 		if (!enemiesCreated) {
+			fontRenderer = new FontRenderer("ClassicShit.ttf", 24);
+			System.out.println("GOIIIOIfo");
 			createEnemies(mig29);
+			// start font renderer thingy
 			enemiesCreated = true;
 		}
 		
@@ -543,7 +544,9 @@ private void gameRender() {
     shader.stop();
 
     // Draw the score using FontRenderer
+    System.out.println("ANTES");
     fontRenderer.drawText("Score: " + score, 10, 10);
+    System.out.println("DEPOIS");
 
     glfwSwapBuffers(window); // swap the color buffers
 
