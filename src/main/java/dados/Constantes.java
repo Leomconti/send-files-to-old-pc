@@ -10,4 +10,5 @@ public class Constantes {
 	public static int txtmig;
 	public static int texturaTiro;
 	public static int texturaExplosao;
+	public static int fontTexture;
 }

@@ -72,7 +72,7 @@ public class Enemy extends Object3D {
         z += vz * dt;
         
         // Keep the enemy within certain bounds
-        float bound = 10.0f; // Adjust this value to change the area enemies move in
+        float bound = 400.0f; // Adjust this value to change the area enemies move in
         x = Math.max(-bound, Math.min(bound, x));
         y = Math.max(0, Math.min(bound, y)); // Keep y above 0
         z = Math.max(-bound, Math.min(bound, z));

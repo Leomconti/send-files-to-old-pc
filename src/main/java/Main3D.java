@@ -31,12 +31,18 @@ import java.nio.*;
 import java.util.ArrayList;
 import java.util.Random;
 
+import util.FontRenderer;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.glUniform4fv;
+import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -88,7 +94,10 @@ public class Main3D {
 	Player m29;
 	
 	double angluz = 0;
-    
+
+	private int score = 0;
+
+	FontRenderer fontRenderer;
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -189,7 +198,7 @@ public class Main3D {
 				if ( key == GLFW_KEY_SPACE) {
 					FIRE = false;
 				}
-		};
+		}
     });
 
 		// Get the thread stack and push a new frame
@@ -214,6 +223,9 @@ public class Main3D {
 
 		// Make the window visible
 		glfwShowWindow(window);
+		
+		// start font renderer thingy
+		fontRenderer = new FontRenderer("ClassicShit.ttf", 24);
 	}
 	
   private void createEnemies(ObjModel enemyModel) {
@@ -296,6 +308,11 @@ public class Main3D {
 		BufferedImage imgtextexp = TextureLoader.loadImage("texturaExplosao.png");
 		Constantes.texturaExplosao = TextureLoader.loadTexture(imgtextexp);
 		System.out.println("texturaExplosao "+Constantes.texturaExplosao);
+
+
+		BufferedImage fontImage = TextureLoader.loadImage("fontTexture.png");
+		Constantes.fontTexture = TextureLoader.loadTexture(fontImage);
+
 		
 		
 
@@ -334,20 +351,7 @@ public class Main3D {
 		
 		//angluz+=(Math.PI/4)*diftime/1000.0f;
 		angluz = 0;
-		
-//		
-//		if(RIGHT) {
-//			cameraPos.x += cameraVectorRight.x*vel*diftime/1000.0f;
-//			cameraPos.y += cameraVectorRight.y*vel*diftime/1000.0f;
-//			cameraPos.z += cameraVectorRight.z*vel*diftime/1000.0f;
-//			//System.out.println("UP "+diftime);
-//		}
-//		if(LEFT) {
-//			cameraPos.x -= cameraVectorRight.x*vel*diftime/1000.0f;
-//			cameraPos.y -= cameraVectorRight.y*vel*diftime/1000.0f;
-//			cameraPos.z -= cameraVectorRight.z*vel*diftime/1000.0f;
-//			//System.out.println("UP "+diftime);
-//		}	
+	
 		
 		Matrix4f rotTmp = new Matrix4f();
 		rotTmp.setIdentity();
@@ -448,19 +452,25 @@ public class Main3D {
         Object3D obj = listaObjetos.get(i);
         obj.SimulaSe(diftime);
 
+		// check for projectile collision
         if (obj instanceof Projetil) {
             Projetil projetil = (Projetil) obj;
             for (int j = 0; j < listaObjetos.size(); j++) {
+				// check each target we have for the collision
+				// of the projectiole
                 Object3D target = listaObjetos.get(j);
+				// if it's an enemy it means it can explode
                 if (target instanceof Enemy && checkCollision(projetil, target)) {
+					// remove the projectile
+					// remove the target
                     objectsToRemove.add(projetil);
                     objectsToRemove.add(target);
+					score += 10;
                     break;
                 }
             }
         }
     }
-
     listaObjetos.removeAll(objectsToRemove);
 }
 
@@ -472,53 +482,55 @@ private boolean checkCollision(Object3D obj1, Object3D obj2) {
     return distance < (obj1.raio + obj2.raio);
 }
 
-	private void gameRender() {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+private void gameRender() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-		glEnable(GL_LIGHTING);
-		glShadeModel(GL_SMOOTH);
+    glEnable(GL_LIGHTING);
+    glShadeModel(GL_SMOOTH);
 
-		glLoadIdentity();
+    glLoadIdentity();
 
-		shader.start();
-		
-		int projectionlocation = glGetUniformLocation(shader.programID, "projection");
-		//Matrix4f projection = setFrustum(-1f,1f,-1f,1f,1f,100.0f);
-		Matrix4f projection = Utils3D.setFrustum(-1.5f,1.5f,-1f,1f,1f,500.0f);
-		projection.storeTranspose(matrixBuffer);
-		matrixBuffer.flip();
-		glUniformMatrix4fv(projectionlocation, false, matrixBuffer);
-		
-		int lightpos = glGetUniformLocation(shader.programID, "lightPosition");
-		
-		float yl = (float)(Math.cos(angluz)*50.0);
-		float zl = (float)(Math.sin(angluz)*50.0);
-		
-		float vf[] = {0.0f,yl,zl,1.0f};
-		glUniform4fv(lightpos, vf);
-		
-		glEnable(GL_DEPTH_TEST);
-		
-		glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, tgato);
-		glBindTexture(GL_TEXTURE_2D, Constantes.tmult);
-		
-		
-		int loctexture = glGetUniformLocation(shader.programID, "tex");
-		glUniform1i(loctexture, 0);
-		
-		int viewlocation = glGetUniformLocation(shader.programID, "view");
-		view.storeTranspose(matrixBuffer);
-		matrixBuffer.flip();
-		glUniformMatrix4fv(viewlocation, false, matrixBuffer);
-		
-		Constantes.mapa.DesenhaSe(shader);
-		umcubo.DesenhaSe(shader);		
-		
+    shader.start();
+    
+    int projectionlocation = glGetUniformLocation(shader.programID, "projection");
+    //Matrix4f projection = setFrustum(-1f,1f,-1f,1f,1f,100.0f);
+    Matrix4f projection = Utils3D.setFrustum(-1.5f,1.5f,-1f,1f,1f,500.0f);
+    projection.storeTranspose(matrixBuffer);
+    matrixBuffer.flip();
+    glUniformMatrix4fv(projectionlocation, false, matrixBuffer);
+    
+    int lightpos = glGetUniformLocation(shader.programID, "lightPosition");
+    
+    float yl = (float)(Math.cos(angluz)*50.0);
+    float zl = (float)(Math.sin(angluz)*50.0);
+    
+    float vf[] = {0.0f,yl,zl,1.0f};
+    glUniform4fv(lightpos, vf);
+    
+    glEnable(GL_DEPTH_TEST);
+    
+    glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, tgato);
+    glBindTexture(GL_TEXTURE_2D, Constantes.tmult);
+    
+    
+    int loctexture = glGetUniformLocation(shader.programID, "tex");
+    glUniform1i(loctexture, 0);
+    
+    int viewlocation = glGetUniformLocation(shader.programID, "view");
+    view.storeTranspose(matrixBuffer);
+    matrixBuffer.flip();
+    glUniformMatrix4fv(viewlocation, false, matrixBuffer);
+    
+    Constantes.mapa.DesenhaSe(shader);
+    umcubo.DesenhaSe(shader);		
+        
+    // desenha o player
     glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
     m29.DesenhaSe(shader);
     
-    for(int i = 0; i < listaObjetos.size(); i++) {
+    // desenha os inimigos e os tiros
+    for (int i = 0; i < listaObjetos.size(); i++) {
         Object3D obj = listaObjetos.get(i);
         if (obj instanceof Enemy) {
             glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
@@ -528,14 +540,17 @@ private boolean checkCollision(Object3D obj1, Object3D obj2) {
         obj.DesenhaSe(shader);
     }
 
-		shader.stop();
-		
-		glfwSwapBuffers(window); // swap the color buffers
+    shader.stop();
 
-		// Poll for window events. The key callback above will only be
-		// invoked during this call.
-		glfwPollEvents();
-	}
+    // Draw the score using FontRenderer
+    fontRenderer.drawText("Score: " + score, 10, 10);
+
+    glfwSwapBuffers(window); // swap the color buffers
+
+    // Poll for window events. The key callback above will only be
+    // invoked during this call.
+    glfwPollEvents();
+}
 
 
 	public static void main(String[] args) {
