@@ -140,4 +140,13 @@ public class Utils3D {
         return result;
     }
 
+	public static Vector4f subtractVectors(Vector4f v1, Vector4f v2) {
+        return new Vector4f(
+            v1.x - v2.x,
+            v1.y - v2.y,
+            v1.z - v2.z,
+            0.0f  // We set w to 0 for direction vectors
+        );
+    }
+
 }

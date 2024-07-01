@@ -361,15 +361,10 @@ public class Main3D {
 			playerVelocity = Math.max(playerVelocity - deceleration * dt, 0);
 		}
 	
-		// Move camera based on velocity and direction
-		cameraPos.x -= cameraVectorFront.x * playerVelocity * dt;
-		cameraPos.y -= cameraVectorFront.y * playerVelocity * dt;
-		cameraPos.z -= cameraVectorFront.z * playerVelocity * dt;
-	
-		// Update player position relative to camera
-		m29.x = cameraPos.x + cameraVectorFront.x * cameraDistance;
-		m29.y = cameraPos.y + cameraVectorFront.y * cameraDistance + cameraOffsetY;
-		m29.z = cameraPos.z + cameraVectorFront.z * cameraDistance;
+		// Move player based on velocity and direction
+		m29.x -= cameraVectorFront.x * playerVelocity * dt;
+		m29.y -= cameraVectorFront.y * playerVelocity * dt;
+		m29.z -= cameraVectorFront.z * playerVelocity * dt;
 	
 		// Update player rotation
 		m29.Front = new Vector4f(cameraVectorFront);
@@ -377,11 +372,16 @@ public class Main3D {
 		m29.Right = new Vector4f(cameraVectorRight);
 	
 		// Add a slight pitch to the player model based on vertical movement
-		float pitchAngle = (float) Math.toRadians(cameraVectorFront.y * 30); // Adjust the 30 to change pitch sensitivity
+		float pitchAngle = (float) Math.toRadians(cameraVectorFront.y * 30);
 		Matrix4f pitchRotation = new Matrix4f();
 		pitchRotation.rotate(pitchAngle, new Vector3f(m29.Right.x, m29.Right.y, m29.Right.z));
 		m29.Front = Utils3D.transformVector(pitchRotation, m29.Front);
 		m29.UP = Utils3D.transformVector(pitchRotation, m29.UP);
+	
+		// Update camera position relative to player
+		cameraPos.x = m29.x + cameraVectorFront.x * cameraDistance;
+		cameraPos.y = m29.y + cameraVectorFront.y * cameraDistance - cameraOffsetY;
+		cameraPos.z = m29.z + cameraVectorFront.z * cameraDistance;
 	
 		// Handle shooting
 		tirotimer += diftime;
@@ -397,7 +397,10 @@ public class Main3D {
 		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
 	
 		// Update view matrix
-		view = Utils3D.setLookAtMatrix(cameraPos, cameraVectorFront, cameraVectorUP, cameraVectorRight);
+		Vector4f targetPos = new Vector4f(m29.x, m29.y, m29.z, 1.0f);
+		Vector4f cameraToTarget = Utils3D.subtractVectors(targetPos, cameraPos);
+		Utils3D.vec3dNormilize(cameraToTarget);
+		view = Utils3D.setLookAtMatrix(cameraPos, cameraToTarget, cameraVectorUP, cameraVectorRight);
 	}
 	
 
