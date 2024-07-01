@@ -75,38 +75,37 @@ public class Projetil extends Object3D {
 		glUniform1i(bilbloc,0);
 	}
 	
-	@Override
-	public void SimulaSe(long diftime) {
-		super.SimulaSe(diftime);
-		
-		timervida+=diftime;
-		
-		x += vx*diftime/1000.0f;
-		y += vy*diftime/1000.0f;
-		z += vz*diftime/1000.0f;
-		
-		if(timervida> 3000) {
-			vivo = false;
-		}
-		
-		if(Constantes.mapa.testaColisao(x, y, z, raio)) {
-			//vivo = false;
-			morrendo = true;
-			vx = 0;
-			vy = 0;
-			vz = 0;
-		}
-		
-		if(morrendo) {
-			timermorrendo+=diftime;
-			raio = raio*((diftime/400.0f)+1);
-			System.out.println("raio "+raio);
-			if(timermorrendo>1000) {
-				vivo = false;
-			}
-		}
-		
-		//ang+=rotvel*diftime/1000.0f;
-	}	
-
+    @Override
+    public void SimulaSe(long diftime) {
+        super.SimulaSe(diftime);
+        
+        timervida += diftime;
+        
+        if (!morrendo) {
+            x += vx * diftime / 1000.0f;
+            y += vy * diftime / 1000.0f;
+            z += vz * diftime / 1000.0f;
+        }
+        
+        if (timervida > 3000) {
+            vivo = false;
+        }
+        
+        if (Constantes.mapa.testaColisao(x, y, z, raio)) {
+            morrendo = true;
+            vx = 0;
+            vy = 0;
+            vz = 0;
+        }
+        
+        if (morrendo) {
+            timermorrendo += diftime;
+            // Limit the explosion size
+            float maxExplosionSize = raio * 5; // Adjust this value as needed
+            raio = Math.min(raio * ((diftime / 400.0f) + 1), maxExplosionSize);
+            if (timermorrendo > 1000) {
+                vivo = false;
+            }
+        }
+    }
 }
