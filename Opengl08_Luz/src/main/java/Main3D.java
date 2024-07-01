@@ -22,17 +22,8 @@ import obj.Projetil;
 import shaders.StaticShader;
 import util.TextureLoader;
 import util.Utils3D;
-import org.lwjgl.*;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
 import java.awt.image.BufferedImage;
 
-//import com.sun.org.apache.xerces.internal.dom.DeepNodeListImpl;
 
 import java.nio.*;
 import java.util.ArrayList;
@@ -351,29 +342,27 @@ public class Main3D {
 			playerVelocity = Math.max(playerVelocity - deceleration * dt, 0);
 		}
 	
-		// Move player based on velocity and direction
-		m29.x -= cameraVectorFront.x * playerVelocity * dt;
-		m29.y -= cameraVectorFront.y * playerVelocity * dt;
-		m29.z -= cameraVectorFront.z * playerVelocity * dt;
+		// Calculate player movement
+		float dx = -cameraVectorFront.x * playerVelocity * dt;
+		float dy = -cameraVectorFront.y * playerVelocity * dt;
+		float dz = -cameraVectorFront.z * playerVelocity * dt;
 	
-		// Update player rotation
+		// Update player position
+		m29.x += dx;
+		m29.y += dy;
+		m29.z += dz;
+	
+		// Update player rotation vectors
 		m29.Front = new Vector4f(cameraVectorFront);
 		m29.UP = new Vector4f(cameraVectorUP);
 		m29.Right = new Vector4f(cameraVectorRight);
 	
-		// Add a slight pitch to the player model based on vertical movement
-		float pitchAngle = (float) Math.toRadians(cameraVectorFront.y * 30);
-		Matrix4f pitchRotation = new Matrix4f();
-		pitchRotation.rotate(pitchAngle, new Vector3f(m29.Right.x, m29.Right.y, m29.Right.z));
-		m29.Front = Utils3D.transformVector(pitchRotation, m29.Front);
-		m29.UP = Utils3D.transformVector(pitchRotation, m29.UP);
-	
 		// Update camera position relative to player
-		cameraPos.x = m29.x + cameraVectorFront.x * cameraDistance;
-		cameraPos.y = m29.y + cameraVectorFront.y * cameraDistance - cameraOffsetY;
-		cameraPos.z = m29.z + cameraVectorFront.z * cameraDistance;
+		cameraPos.x = m29.x - cameraVectorFront.x * cameraDistance;
+		cameraPos.y = m29.y - cameraVectorFront.y * cameraDistance - cameraOffsetY;
+		cameraPos.z = m29.z - cameraVectorFront.z * cameraDistance;
 	
-		// Handle shooting
+		// Handle shooting with right mouse button
 		tirotimer += diftime;
 		if (mouseRightPressed && tirotimer >= 100) {
 			shootProjectile();
@@ -386,12 +375,13 @@ public class Main3D {
 		// Check for collisions with terrain
 		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
 	
-		// Update view matrix
+		// Update view matrix based on camera position
 		Vector4f targetPos = new Vector4f(m29.x, m29.y, m29.z, 1.0f);
 		Vector4f cameraToTarget = Utils3D.subtractVectors(targetPos, cameraPos);
 		Utils3D.vec3dNormilize(cameraToTarget);
 		view = Utils3D.setLookAtMatrix(cameraPos, cameraToTarget, cameraVectorUP, cameraVectorRight);
 	}
+	
 	
 
     private void shootProjectile() {
