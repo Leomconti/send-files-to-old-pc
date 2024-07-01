@@ -139,6 +139,12 @@ public class Main3D {
 		// Setup a key callback. It will be called every time a key is pressed, repeated
 		// or released.
 
+		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+			}
+		});
+
 		glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
 			float dx = (float) xpos - mouseX;
 			float dy = (float) ypos - mouseY;
@@ -147,8 +153,8 @@ public class Main3D {
 
 			// Rotate camera based on mouse movement
 			float sensitivity = 0.1f;
-			viewAngY += dx * sensitivity;
-			viewAngX += dy * sensitivity;
+			viewAngY += dy * sensitivity;
+			viewAngX += dx * sensitivity;
 
 			// Limit vertical rotation
 			viewAngX = Math.max(-90, Math.min(90, viewAngX));
@@ -351,6 +357,30 @@ public class Main3D {
 
 		Matrix4f rotTmp = new Matrix4f();
 		rotTmp.setIdentity();
+		if (RIGHT) {
+			rotTmp.rotate(-1.0f * diftime / 1000.0f,
+					new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
+		}
+		if (LEFT) {
+			rotTmp.rotate(1.0f * diftime / 1000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
+		}
+		if (UP) {
+			rotTmp.rotate(-1.0f * diftime / 1000.0f,
+					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
+		}
+		if (DOWN) {
+			rotTmp.rotate(1.0f * diftime / 1000.0f,
+					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
+		}
+		if (QBu) {
+			rotTmp.rotate(-1.0f * diftime / 1000.0f,
+					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
+		}
+		if (EBu) {
+			rotTmp.rotate(1.0f * diftime / 1000.0f,
+					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
+		}
+
 		rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
 		rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
 		rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
@@ -383,12 +413,16 @@ public class Main3D {
 		view.mul(transf, view, view);
 
 		m29.raio = 0.01f;
+
+		// Update camera position to follow the player
+		m29.x = cameraPos.x + cameraVectorFront.x * cameraDistance;
+		m29.y = cameraPos.y + cameraVectorFront.y * cameraDistance - cameraOffsetY;
+		m29.z = cameraPos.z + cameraVectorFront.z * cameraDistance;
+
+		// Update player orientation
 		m29.Front = cameraVectorFront;
 		m29.UP = cameraVectorUP;
 		m29.Right = cameraVectorRight;
-		m29.x = cameraPos.x - cameraVectorFront.x * 2;
-		m29.y = cameraPos.y - cameraVectorFront.y * 2;
-		m29.z = cameraPos.z - cameraVectorFront.z * 2;
 
 		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
 
