@@ -222,7 +222,7 @@ public class Main3D {
               rnd.nextFloat() * 20 - 10,
               rnd.nextFloat() * 10 + 5,
               rnd.nextFloat() * 20 - 10,
-              0.1f  // Increased size for visibility
+              0.01f  // Increased size for visibility
           );
           enemy.model = enemyModel;
           listaObjetos.add(enemy);
