@@ -158,35 +158,34 @@ public class Main3D {
 		});
 
 		glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
-            float dx = (float) xpos - mouseX;
-            float dy = (float) ypos - mouseY;
-            mouseX = (float) xpos;
-            mouseY = (float) ypos;
+			float dx = (float) xpos - mouseX;
+			float dy = (float) ypos - mouseY;
+			mouseX = (float) xpos;
+			mouseY = (float) ypos;
 
-            // Rotate camera based on mouse movement
-            float sensitivity = 0.1f;
-            viewAngY += dx * sensitivity;
-            viewAngX += dy * sensitivity;
+			// Rotate camera based on mouse movement
+			float sensitivity = 0.1f;
+			viewAngY += dx * sensitivity;
+			viewAngX += dy * sensitivity;
 
-            // Limit vertical rotation
-            viewAngX = Math.max(-90, Math.min(90, viewAngX));
+			// Limit vertical rotation
+			viewAngX = Math.max(-90, Math.min(90, viewAngX));
 
-            // Update camera vectors
-            updateCameraVectors();
-        });
+			// Update camera vectors
+			updateCameraVectors();
+		});
 
 		glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
-            if (button == GLFW_MOUSE_BUTTON_LEFT) {
-                mouseLeftPressed = (action == GLFW_PRESS);
-            } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-                mouseRightPressed = (action == GLFW_PRESS);
-                FIRE = mouseRightPressed;
-            }
-        });
+			if (button == GLFW_MOUSE_BUTTON_LEFT) {
+				mouseLeftPressed = (action == GLFW_PRESS);
+			} else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+				mouseRightPressed = (action == GLFW_PRESS);
+				FIRE = mouseRightPressed;
+			}
+		});
 
-        // Hide the cursor and capture it
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+		// Hide the cursor and capture it
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		// Get the thread stack and push a new frame
 		try (MemoryStack stack = stackPush()) {
@@ -211,15 +210,6 @@ public class Main3D {
 		// Make the window visible
 		glfwShowWindow(window);
 
-		// Initialize camera position and angle
-		viewAngX = 0; // No vertical tilt initially
-		viewAngY = 180; // Face forward (along negative Z-axis)
-		updateCameraVectors();
-
-		// Set initial camera position
-		cameraPos.x = 0;
-		cameraPos.y = cameraOffsetY;
-		cameraPos.z = cameraDistance;
 	}
 	
 
