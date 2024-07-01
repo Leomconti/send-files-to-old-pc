@@ -203,20 +203,6 @@ public class Main3D {
 
 	}
 	
-
-	private void updateCameraVectors() {
-		float yaw = (float) Math.toRadians(viewAngY);
-		float pitch = (float) Math.toRadians(viewAngX);
-	
-		cameraVectorFront.x = (float) (Math.cos(yaw) * Math.cos(pitch));
-		cameraVectorFront.y = (float) Math.sin(pitch);
-		cameraVectorFront.z = (float) (Math.sin(yaw) * Math.cos(pitch));
-		Utils3D.vec3dNormilize(cameraVectorFront);
-	
-		// When moving forward, you want the camera to follow; you might need to negate these
-		cameraVectorFront.negate();
-	}
-	
 	
   private void createEnemies(ObjModel enemyModel) {
       for (int i = 0; i < 5; i++) {
@@ -331,55 +317,70 @@ public class Main3D {
 	long tirotimer = 0;
 
 	private void gameUpdate(long diftime) {
-		float dt = diftime / 1000.0f;
-	
-		// Update player velocity based on left mouse button
-		if (mouseLeftPressed) {
-			playerVelocity = Math.min(playerVelocity + acceleration * dt, maxVelocity);
-		} else {
-			playerVelocity = Math.max(playerVelocity - deceleration * dt, 0);
-		}
-	
-		// Calculate player movement
-		float dx = cameraVectorFront.x * playerVelocity * dt;  // Removed the negation here
-		float dy = cameraVectorFront.y * playerVelocity * dt;
-		float dz = cameraVectorFront.z * playerVelocity * dt;
+        float dt = diftime / 1000.0f;
+    
+        // Update player velocity based on left mouse button
+        if (mouseLeftPressed) {
+            playerVelocity = Math.min(playerVelocity + acceleration * dt, maxVelocity);
+        } else {
+            playerVelocity = Math.max(playerVelocity - deceleration * dt, 0);
+        }
+    
+        // Calculate player movement direction
+        Vector4f movementDirection = new Vector4f(cameraVectorFront);
+        movementDirection.y = 0; // Keep movement in the horizontal plane
+        Utils3D.vec3dNormilize(movementDirection);
+    
+        // Update player position
+        m29.x += movementDirection.x * playerVelocity * dt;
+        m29.z += movementDirection.z * playerVelocity * dt;
+        m29.y += movementDirection.y * playerVelocity * dt;
+    
+        // Update player rotation vectors
+        m29.Front = new Vector4f(cameraVectorFront);
+        m29.UP = new Vector4f(cameraVectorUP);
+        m29.Right = new Vector4f(cameraVectorRight);
+    
+        // Update camera position relative to player
+        cameraPos.x = m29.x - cameraVectorFront.x * cameraDistance;
+        cameraPos.y = m29.y - cameraVectorFront.y * cameraDistance + cameraOffsetY;
+        cameraPos.z = m29.z - cameraVectorFront.z * cameraDistance;
+    
+        // Handle shooting with right mouse button
+        tirotimer += diftime;
+        if (mouseRightPressed && tirotimer >= 100) {
+            shootProjectile();
+            tirotimer = 0;
+        }
+    
+        // Update and remove projectiles
+        updateProjectiles(dt);
+    
+        // Check for collisions with terrain
+        Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
+    
+        // Update view matrix based on camera position
+        Vector4f targetPos = new Vector4f(m29.x, m29.y, m29.z, 1.0f);
+        Vector4f cameraToTarget = Utils3D.subtractVectors(targetPos, cameraPos);
+        Utils3D.vec3dNormilize(cameraToTarget);
+        view = Utils3D.setLookAtMatrix(cameraPos, cameraToTarget, cameraVectorUP, cameraVectorRight);
+    }
 
-		// Update player position
-		m29.x += dx;
-		m29.y += dy;
-		m29.z += dz;
-
-		// Update camera position relative to player
-		cameraPos.x = m29.x - cameraVectorFront.x * cameraDistance;
-		cameraPos.y = m29.y - cameraVectorFront.y * cameraDistance - cameraOffsetY;
-		cameraPos.z = m29.z - cameraVectorFront.z * cameraDistance;
-
-	
-		// Update player rotation vectors
-		m29.Front = new Vector4f(cameraVectorFront);
-		m29.UP = new Vector4f(cameraVectorUP);
-		m29.Right = new Vector4f(cameraVectorRight);
-
-		// Handle shooting with right mouse button
-		tirotimer += diftime;
-		if (mouseRightPressed && tirotimer >= 100) {
-			shootProjectile();
-			tirotimer = 0;
-		}
-	
-		// Update and remove projectiles
-		updateProjectiles(dt);
-	
-		// Check for collisions with terrain
-		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
-	
-		// Update view matrix based on camera position
-		Vector4f targetPos = new Vector4f(m29.x, m29.y, m29.z, 1.0f);
-		Vector4f cameraToTarget = Utils3D.subtractVectors(targetPos, cameraPos);
-		Utils3D.vec3dNormilize(cameraToTarget);
-		view = Utils3D.setLookAtMatrix(cameraPos, cameraToTarget, cameraVectorUP, cameraVectorRight);
-	}
+    private void updateCameraVectors() {
+        float yaw = (float) Math.toRadians(viewAngY);
+        float pitch = (float) Math.toRadians(viewAngX);
+    
+        cameraVectorFront.x = (float) (Math.cos(yaw) * Math.cos(pitch));
+        cameraVectorFront.y = (float) Math.sin(pitch);
+        cameraVectorFront.z = (float) (Math.sin(yaw) * Math.cos(pitch));
+        Utils3D.vec3dNormilize(cameraVectorFront);
+    
+        cameraVectorRight = Utils3D.crossProduct(cameraVectorFront, new Vector4f(0, 1, 0, 0));
+        Utils3D.vec3dNormilize(cameraVectorRight);
+    
+        cameraVectorUP = Utils3D.crossProduct(cameraVectorRight, cameraVectorFront);
+        Utils3D.vec3dNormilize(cameraVectorUP);
+    }
 	
 	
 
