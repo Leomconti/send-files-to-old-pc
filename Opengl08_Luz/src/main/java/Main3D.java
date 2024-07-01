@@ -212,25 +212,28 @@ public class Main3D {
 		// Make the window visible
 		glfwShowWindow(window);
 		
-    createEnemies();
+    // Load enemy model
+    ObjModel enemyModel = new ObjModel();
+    enemyModel.loadObj("Mig_29_obj.obj");
+    enemyModel.load();
+
+    // Create enemies
+    createEnemies(enemyModel);
+    
 	}
 	
-	private void createEnemies() {
-      ObjModel enemyModel = new ObjModel();
-      enemyModel.loadObj("Mig_29_obj.obj");
-      enemyModel.load();
-      
+  private void createEnemies(ObjModel enemyModel) {
       for (int i = 0; i < 5; i++) {
           Enemy enemy = new Enemy(
               rnd.nextFloat() * 20 - 10,
               rnd.nextFloat() * 10 + 5,
               rnd.nextFloat() * 20 - 10,
-              0.03f
+              0.5f  // Increased size for visibility
           );
           enemy.model = enemyModel;
           listaObjetos.add(enemy);
       }
-    }
+  }
 
 	private void loop() {
 		// This line is critical for LWJGL's interoperation with GLFW's

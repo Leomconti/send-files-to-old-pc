@@ -6,6 +6,14 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
 
 public class Utils3D {
+  public static Vector4f crossProduct(Vector4f v1, Vector4f v2) {
+      return new Vector4f(
+          v1.y * v2.z - v1.z * v2.y,
+          v1.z * v2.x - v1.x * v2.z,
+          v1.x * v2.y - v1.y * v2.x,
+          0.0f
+      );
+  }
 	
 	public static Matrix4f setLookAtMatrix(Vector4f pos,Vector4f front,Vector4f up,Vector4f right) {
 		Matrix4f m = new Matrix4f();
