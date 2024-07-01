@@ -97,6 +97,10 @@ public class Main3D {
     private boolean mouseLeftPressed = false;
     private boolean mouseRightPressed = false;
 
+	private float cameraOffsetY = -0.5f; // Slightly below center
+    private float cameraDistance = 2.0f; // Distance behind the player
+
+
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -135,71 +139,6 @@ public class Main3D {
 		// Setup a key callback. It will be called every time a key is pressed, repeated
 		// or released.
 
-		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-
-			if (action == GLFW_PRESS) {
-				if (key == GLFW_KEY_W) {
-					UP = true;
-				}
-				if (key == GLFW_KEY_S) {
-					DOWN = true;
-				}
-				if (key == GLFW_KEY_A) {
-					RIGHT = true;
-				}
-				if (key == GLFW_KEY_D) {
-					LEFT = true;
-				}
-				if (key == GLFW_KEY_Q) {
-					QBu = true;
-				}
-				if (key == GLFW_KEY_E) {
-					EBu = true;
-				}
-				if (key == GLFW_KEY_UP) {
-					FORWARD = true;
-				}
-				if (key == GLFW_KEY_DOWN) {
-					BACKWARD = true;
-				}
-				if (key == GLFW_KEY_SPACE) {
-					FIRE = true;
-				}
-			}
-			if (action == GLFW_RELEASE) {
-				if (key == GLFW_KEY_W) {
-					UP = false;
-				}
-				if (key == GLFW_KEY_S) {
-					DOWN = false;
-				}
-				if (key == GLFW_KEY_A) {
-					RIGHT = false;
-				}
-				if (key == GLFW_KEY_D) {
-					LEFT = false;
-				}
-				if (key == GLFW_KEY_Q) {
-					QBu = false;
-				}
-				if (key == GLFW_KEY_E) {
-					EBu = false;
-				}
-				if (key == GLFW_KEY_UP) {
-					FORWARD = false;
-				}
-				if (key == GLFW_KEY_DOWN) {
-					BACKWARD = false;
-				}
-				if (key == GLFW_KEY_SPACE) {
-					FIRE = false;
-				}
-			}
-			;
-		});
-
 		glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
 			float dx = (float) xpos - mouseX;
 			float dy = (float) ypos - mouseY;
@@ -223,6 +162,7 @@ public class Main3D {
 				mouseLeftPressed = (action == GLFW_PRESS);
 			} else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
 				mouseRightPressed = (action == GLFW_PRESS);
+				FIRE = mouseRightPressed;
 			}
 		});
 
@@ -251,9 +191,20 @@ public class Main3D {
 
 		// Make the window visible
 		glfwShowWindow(window);
+
+		// Initialize camera position and angle
+		viewAngX = 0; // No vertical tilt initially
+		viewAngY = 180; // Face forward (along negative Z-axis)
+		updateCameraVectors();
+
+		// Set initial camera position
+		cameraPos.x = 0;
+		cameraPos.y = cameraOffsetY;
+		cameraPos.z = cameraDistance;
 	}
 	
-	private void updateCameraVectors() {
+
+    private void updateCameraVectors() {
         float yaw = (float) Math.toRadians(viewAngY);
         float pitch = (float) Math.toRadians(viewAngX);
 
@@ -396,38 +347,10 @@ public class Main3D {
 			cameraPos.z -= cameraVectorFront.z * acceleration * diftime / 1000.0f;
 		}
 		
-		// Shooting
-		if (mouseRightPressed && tirotimer >= 100) {
-			// ... (shooting code remains the same)
-			tirotimer = 0;
-		}
+
 
 		Matrix4f rotTmp = new Matrix4f();
 		rotTmp.setIdentity();
-		if (RIGHT) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
-		}
-		if (LEFT) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
-		}
-		if (UP) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
-		}
-		if (DOWN) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
-		}
-		if (QBu) {
-			rotTmp.rotate(-1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
-		}
-		if (EBu) {
-			rotTmp.rotate(1.0f * diftime / 1000.0f,
-					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
-		}
-
 		rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
 		rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
 		rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
