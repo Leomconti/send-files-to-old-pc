@@ -71,8 +71,6 @@ public class Main3D {
 	boolean LEFT = false;
 	boolean RIGHT = false;
 	
-	boolean FORWARD = false;
-	boolean BACKWARD = false;
 	
 	boolean QBu = false;
 	boolean EBu = false;
@@ -321,14 +319,6 @@ public class Main3D {
 			cameraPos.z -= cameraVectorFront.z * acceleration * diftime / 1000.0f;
 		}
 
-		// Shooting
-		if (mouseRightPressed && tirotimer >= 100) {
-			// ... (shooting code remains the same)
-			tirotimer = 0;
-		}
-
-		//
-
 		Matrix4f rotTmp = new Matrix4f();
 		rotTmp.setIdentity();
 		if (RIGHT) {
@@ -354,7 +344,6 @@ public class Main3D {
 			rotTmp.rotate(1.0f * diftime / 1000.0f,
 					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
 		}
-
   
 		rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
 		rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
@@ -363,20 +352,6 @@ public class Main3D {
 		Utils3D.vec3dNormilize(cameraVectorFront);
 		Utils3D.vec3dNormilize(cameraVectorRight);
 		Utils3D.vec3dNormilize(cameraVectorUP);
-
-		// --- - - - 
-		if (FORWARD) {
-			cameraPos.x -= cameraVectorFront.x * vel * diftime / 1000.0f;
-			cameraPos.y -= cameraVectorFront.y * vel * diftime / 1000.0f;
-			cameraPos.z -= cameraVectorFront.z * vel * diftime / 1000.0f;
-			//System.out.println("UP "+diftime);
-		}
-		if (BACKWARD) {
-			cameraPos.x += cameraVectorFront.x * vel * diftime / 1000.0f;
-			cameraPos.y += cameraVectorFront.y * vel * diftime / 1000.0f;
-			cameraPos.z += cameraVectorFront.z * vel * diftime / 1000.0f;
-			//System.out.println("UP "+diftime);
-		}
     
 		Vector4f t = new Vector4f(cameraPos.dot(cameraPos, cameraVectorRight), cameraPos.dot(cameraPos, cameraVectorUP),
 		cameraPos.dot(cameraPos, cameraVectorFront), 1.0f);
