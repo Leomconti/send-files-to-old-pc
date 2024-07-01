@@ -428,58 +428,6 @@ public class Main3D {
         cameraVectorUP = Utils3D.crossProduct(cameraVectorRight, cameraVectorFront);
         Utils3D.vec3dNormilize(cameraVectorUP);
     }
-	
-	
-
-    private void shootProjectile() {
-		float velocidade_projetil = 14;
-		Projetil pj = new Projetil(m29.x, m29.y, m29.z);
-		pj.vx = -cameraVectorFront.x * velocidade_projetil;
-		pj.vy = -cameraVectorFront.y * velocidade_projetil;
-		pj.vz = -cameraVectorFront.z * velocidade_projetil;
-		pj.raio = 0.2f;
-		pj.model = vboBilbord;
-		pj.setRotation(cameraVectorFront, cameraVectorUP, cameraVectorRight);
-		listaObjetos.add(pj);
-	}
-	
-	private void updateProjectiles(float dt) {
-		ArrayList<Object3D> objectsToRemove = new ArrayList<>();
-	
-		for (Object3D obj : listaObjetos) {
-			obj.SimulaSe((long)(dt * 1000));
-	
-			if (obj instanceof Projetil) {
-				Projetil projetil = (Projetil) obj;
-				
-				// Remove projectile if it's too far away
-				if (Vector3f.sub(new Vector3f(projetil.x, projetil.y, projetil.z), 
-								 new Vector3f(cameraPos.x, cameraPos.y, cameraPos.z), null).lengthSquared() > 1000) {
-					objectsToRemove.add(projetil);
-					continue;
-				}
-	
-				// Check collision with enemies
-				for (Object3D target : listaObjetos) {
-					if (target instanceof Enemy && checkCollision(projetil, target)) {
-						objectsToRemove.add(projetil);
-						objectsToRemove.add(target);
-						break;
-					}
-				}
-			}
-		}
-	
-		listaObjetos.removeAll(objectsToRemove);
-	}
-	
-	private boolean checkCollision(Object3D obj1, Object3D obj2) {
-		float dx = obj1.x - obj2.x;
-		float dy = obj1.y - obj2.y;
-		float dz = obj1.z - obj2.z;
-		float distance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-		return distance < (obj1.raio + obj2.raio);
-	}
 
 	private void gameRender() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
