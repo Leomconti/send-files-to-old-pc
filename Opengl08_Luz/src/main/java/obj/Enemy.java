@@ -1,17 +1,15 @@
 package obj;
-
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 import shaders.ShaderProgram;
 import util.Utils3D;
 import java.nio.FloatBuffer;
+import java.util.Random;
 import org.lwjgl.system.MemoryUtil;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
-
 import Model.Model;
-
 
 public class Enemy extends Object3D {
     public Vector3f cor = new Vector3f();
@@ -24,9 +22,21 @@ public class Enemy extends Object3D {
     public Vector4f UP = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
     public Vector4f Right = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
     
+    private Random random = new Random();
+    private float moveTimer = 0;
+    private float moveDuration = 2.0f; // Change direction every 2 seconds
+    
     public Enemy(float x, float y, float z, float r) {
         super(x, y, z);
         raio = r;
+        randomizeVelocity();
+    }
+    
+    private void randomizeVelocity() {
+        float speed = 2.0f; // Adjust this value to change enemy speed
+        vx = (random.nextFloat() - 0.5f) * speed;
+        vy = (random.nextFloat() - 0.5f) * speed;
+        vz = (random.nextFloat() - 0.5f) * speed;
     }
     
     @Override
@@ -49,10 +59,30 @@ public class Enemy extends Object3D {
     public void SimulaSe(long diftime) {
         super.SimulaSe(diftime);
         
-        x += vx * diftime / 1000.0f;
-        y += vy * diftime / 1000.0f;
-        z += vz * diftime / 1000.0f;
+        float dt = diftime / 1000.0f;
         
-        // here we could add some movement or something, just make them spin around or summ
+        moveTimer += dt;
+        if (moveTimer >= moveDuration) {
+            randomizeVelocity();
+            moveTimer = 0;
+        }
+        
+        x += vx * dt;
+        y += vy * dt;
+        z += vz * dt;
+        
+        // Keep the enemy within certain bounds
+        float bound = 10.0f; // Adjust this value to change the area enemies move in
+        x = Math.max(-bound, Math.min(bound, x));
+        y = Math.max(0, Math.min(bound, y)); // Keep y above 0
+        z = Math.max(-bound, Math.min(bound, z));
+        
+        // Update orientation
+        Front.set(-vx, -vy, -vz, 1.0f);
+        Utils3D.vec3dNormilize(Front);
+        Right = Utils3D.crossProduct(UP, Front);
+        Utils3D.vec3dNormilize(Right);
+        UP = Utils3D.crossProduct(Front, Right);
+        Utils3D.vec3dNormilize(UP);
     }
 }

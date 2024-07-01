@@ -216,20 +216,20 @@ public class Main3D {
 	}
 	
 	private void createEnemies() {
-        ObjModel enemyModel = new ObjModel();
-        enemyModel.loadObj("Mig_29_obj.obj");
-        enemyModel.load();
-        
-        for (int i = 0; i < 5; i++) {
-            Enemy enemy = new Enemy(
-                rnd.nextFloat() * 20 - 10,
-                rnd.nextFloat() * 10 + 5,
-                rnd.nextFloat() * 20 - 10,
-                0.01f
-            );
-            enemy.model = enemyModel;
-            listaObjetos.add(enemy);
-        }
+      ObjModel enemyModel = new ObjModel();
+      enemyModel.loadObj("Mig_29_obj.obj");
+      enemyModel.load();
+      
+      for (int i = 0; i < 5; i++) {
+          Enemy enemy = new Enemy(
+              rnd.nextFloat() * 20 - 10,
+              rnd.nextFloat() * 10 + 5,
+              rnd.nextFloat() * 20 - 10,
+              0.03f
+          );
+          enemy.model = enemyModel;
+          listaObjetos.add(enemy);
+      }
     }
 
 	private void loop() {
@@ -440,35 +440,35 @@ public class Main3D {
 		}
 		
 		
-		for(int i = 0; i < listaObjetos.size();i++) {
-			Object3D obj = listaObjetos.get(i);
-			obj.SimulaSe(diftime);
+    ArrayList<Object3D> objectsToRemove = new ArrayList<>();
 
-      if (obj instanceof Projetil) {
-      // check if projectile colidiu com algum dos inimigos, sera que vai lagar ??
-          Projetil projetil = (Projetil) obj;
-          for (int j = 0; j < listaObjetos.size(); j++) {
-              Object3D target = listaObjetos.get(j);
-              if (target instanceof Enemy && checkCollision(projetil, target)) {
-                  projetil.vivo = false;
-                  target.vivo = false;
-                  break;
-              }
-          }
-      }
-  }
+    for(int i = 0; i < listaObjetos.size(); i++) {
+        Object3D obj = listaObjetos.get(i);
+        obj.SimulaSe(diftime);
 
-    // aray list tem esse rmove if bem neat
-    listaObjetos.removeIf(obj -> !obj.vivo);
-	}
+        if (obj instanceof Projetil) {
+            Projetil projetil = (Projetil) obj;
+            for (int j = 0; j < listaObjetos.size(); j++) {
+                Object3D target = listaObjetos.get(j);
+                if (target instanceof Enemy && checkCollision(projetil, target)) {
+                    objectsToRemove.add(projetil);
+                    objectsToRemove.add(target);
+                    break;
+                }
+            }
+        }
+    }
 
-  private boolean checkCollision(Object3D obj1, Object3D obj2){
+    listaObjetos.removeAll(objectsToRemove);
+}
+
+private boolean checkCollision(Object3D obj1, Object3D obj2) {
     float dx = obj1.x - obj2.x;
     float dy = obj1.y - obj2.y;
     float dz = obj1.z - obj2.z;
     float distance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
     return distance < (obj1.raio + obj2.raio);
-  }
+}
 
 	private void gameRender() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
@@ -513,16 +513,19 @@ public class Main3D {
 		Constantes.mapa.DesenhaSe(shader);
 		umcubo.DesenhaSe(shader);		
 		
-		glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
-		m29.DesenhaSe(shader);
-		
-		//glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		glBindTexture(GL_TEXTURE_2D, Constantes.texturaTiro);
-		for(int i = 0; i < listaObjetos.size();i++) {
-			listaObjetos.get(i).DesenhaSe(shader);
-		}
-		
-		
+    glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
+    m29.DesenhaSe(shader);
+    
+    for(int i = 0; i < listaObjetos.size(); i++) {
+        Object3D obj = listaObjetos.get(i);
+        if (obj instanceof Enemy) {
+            glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
+        } else if (obj instanceof Projetil) {
+            glBindTexture(GL_TEXTURE_2D, Constantes.texturaTiro);
+        }
+        obj.DesenhaSe(shader);
+    }
+
 		shader.stop();
 		
 		glfwSwapBuffers(window); // swap the color buffers
