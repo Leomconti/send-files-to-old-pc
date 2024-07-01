@@ -141,18 +141,19 @@ public class Main3D {
 			float dy = (float) ypos - mouseY;
 			mouseX = (float) xpos;
 			mouseY = (float) ypos;
-
-			// Rotate camera based on mouse movement
+		
+			// Invert the horizontal camera rotation direction
 			float sensitivity = 0.1f;
-			viewAngY += dx * sensitivity;
+			viewAngY -= dx * sensitivity; // Here, change '+=' to '-=' to invert the control
 			viewAngX += dy * sensitivity;
-
+		
 			// Limit vertical rotation
 			viewAngX = Math.max(-90, Math.min(90, viewAngX));
-
+		
 			// Update camera vectors
 			updateCameraVectors();
 		});
+		
 
 		glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
 			if (button == GLFW_MOUSE_BUTTON_LEFT) {
