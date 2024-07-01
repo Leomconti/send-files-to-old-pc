@@ -305,8 +305,11 @@ public class Main3D {
 	long tirotimer = 0;
 
 	private void gameUpdate(long diftime) {
+		float vel = 5.0f;
+
 		tirotimer += diftime;
 
+		//angluz+=(Math.PI/4)*diftime/1000.0f;
 		angluz = 0;
 
 		float acceleration = 10.0f;
@@ -367,16 +370,6 @@ public class Main3D {
 		m29.x = cameraPos.x - cameraVectorFront.x * 2;
 		m29.y = cameraPos.y - cameraVectorFront.y * 2;
 		m29.z = cameraPos.z - cameraVectorFront.z * 2;
-
-		Vector4f cameraOffset = new Vector4f(cameraVectorFront.x * 10, cameraVectorFront.y * 10, cameraVectorFront.z * 10, 0.0f); // Distance behind the player
-		cameraPos.x = m29.x - cameraOffset.x;
-		cameraPos.y = m29.y - cameraOffset.y;
-		cameraPos.z = m29.z - cameraOffset.z;
-
-		// // Update the LookAt matrix to keep the player in the center of the view
-		// Vector4f cameraTarget = new Vector4f(m29.x, m29.y, m29.z, 1.0f);
-		// view = Utils3D.setLookAtMatrix(cameraTarget, cameraVectorFront, cameraVectorUP, cameraVectorRight);
-
 
 		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
 
