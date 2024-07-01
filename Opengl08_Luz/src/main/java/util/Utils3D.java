@@ -5,6 +5,8 @@ import static org.lwjgl.opengl.GL11.glFrustum;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
 
+import org.lwjgl.util.vector.Vector3f;
+
 public class Utils3D {
   public static Vector4f crossProduct(Vector4f v1, Vector4f v2) {
       return new Vector4f(
@@ -148,5 +150,4 @@ public class Utils3D {
             0.0f  // We set w to 0 for direction vectors
         );
     }
-
 }
