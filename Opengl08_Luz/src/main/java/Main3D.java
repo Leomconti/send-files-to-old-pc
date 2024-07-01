@@ -204,21 +204,19 @@ public class Main3D {
 	}
 	
 
-    private void updateCameraVectors() {
-        float yaw = (float) Math.toRadians(viewAngY);
-        float pitch = (float) Math.toRadians(viewAngX);
-
-        cameraVectorFront.x = (float) (Math.cos(yaw) * Math.cos(pitch));
-        cameraVectorFront.y = (float) Math.sin(pitch);
-        cameraVectorFront.z = (float) (Math.sin(yaw) * Math.cos(pitch));
-        Utils3D.vec3dNormilize(cameraVectorFront);
-
-        cameraVectorRight = Utils3D.crossProduct(cameraVectorFront, new Vector4f(0, 1, 0, 0));
-        Utils3D.vec3dNormilize(cameraVectorRight);
-
-        cameraVectorUP = Utils3D.crossProduct(cameraVectorRight, cameraVectorFront);
-        Utils3D.vec3dNormilize(cameraVectorUP);
-    }
+	private void updateCameraVectors() {
+		float yaw = (float) Math.toRadians(viewAngY);
+		float pitch = (float) Math.toRadians(viewAngX);
+	
+		cameraVectorFront.x = (float) (Math.cos(yaw) * Math.cos(pitch));
+		cameraVectorFront.y = (float) Math.sin(pitch);
+		cameraVectorFront.z = (float) (Math.sin(yaw) * Math.cos(pitch));
+		Utils3D.vec3dNormilize(cameraVectorFront);
+	
+		// When moving forward, you want the camera to follow; you might need to negate these
+		cameraVectorFront.negate();
+	}
+	
 	
   private void createEnemies(ObjModel enemyModel) {
       for (int i = 0; i < 5; i++) {
@@ -343,25 +341,26 @@ public class Main3D {
 		}
 	
 		// Calculate player movement
-		float dx = -cameraVectorFront.x * playerVelocity * dt;
-		float dy = -cameraVectorFront.y * playerVelocity * dt;
-		float dz = -cameraVectorFront.z * playerVelocity * dt;
-	
+		float dx = cameraVectorFront.x * playerVelocity * dt;  // Removed the negation here
+		float dy = cameraVectorFront.y * playerVelocity * dt;
+		float dz = cameraVectorFront.z * playerVelocity * dt;
+
 		// Update player position
 		m29.x += dx;
 		m29.y += dy;
 		m29.z += dz;
+
+		// Update camera position relative to player
+		cameraPos.x = m29.x - cameraVectorFront.x * cameraDistance;
+		cameraPos.y = m29.y - cameraVectorFront.y * cameraDistance - cameraOffsetY;
+		cameraPos.z = m29.z - cameraVectorFront.z * cameraDistance;
+
 	
 		// Update player rotation vectors
 		m29.Front = new Vector4f(cameraVectorFront);
 		m29.UP = new Vector4f(cameraVectorUP);
 		m29.Right = new Vector4f(cameraVectorRight);
-	
-		// Update camera position relative to player
-		cameraPos.x = m29.x - cameraVectorFront.x * cameraDistance;
-		cameraPos.y = m29.y - cameraVectorFront.y * cameraDistance - cameraOffsetY;
-		cameraPos.z = m29.z - cameraVectorFront.z * cameraDistance;
-	
+
 		// Handle shooting with right mouse button
 		tirotimer += diftime;
 		if (mouseRightPressed && tirotimer >= 100) {
