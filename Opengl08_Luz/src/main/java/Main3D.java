@@ -438,7 +438,6 @@ public class Main3D {
 					if (obj2 instanceof Enemy && checkCollision(obj1, obj2)) {
 						((Projetil) obj1).morrendo = true;
 						obj2.vivo = false;
-						createExplosion(obj2.x, obj2.y, obj2.z);
 						break;
 					}
 				}
@@ -447,7 +446,6 @@ public class Main3D {
 			if (obj1 instanceof Enemy) {
 				if (checkCollision(m29, obj1)) {
 					obj1.vivo = false;
-					createExplosion(obj1.x, obj1.y, obj1.z);
 					System.out.println("Player collided with an enemy!");
 				} else {
 					((Enemy) obj1).moveTowardsPlayer(m29.x, m29.y, m29.z);
@@ -486,7 +484,12 @@ public class Main3D {
 	    float radiusSum = obj1.raio + obj2.raio;
 	    float radiusSumSquared = radiusSum * radiusSum;
 
+<<<<<<< Updated upstream
 	    return distanceSquared < radiusSumSquared;
+=======
+	    // Check if the distance between the centers is less than the sum of the radii
+	    return distanceSquared < radiusSumSquared + 5;
+>>>>>>> Stashed changes
 	}
 
 
@@ -494,16 +497,16 @@ public class Main3D {
 		rotTmp.setIdentity();
 
 		if(RIGHT) {
-			rotTmp.rotate(-1.0f*diftime/5000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
+			rotTmp.rotate(-1.0f*diftime/1000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
 		}
 		if(LEFT) {
-			rotTmp.rotate(1.0f*diftime/5000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
+			rotTmp.rotate(1.0f*diftime/1000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
 		}
 		if(UP) {
-			rotTmp.rotate(-1.0f*diftime/5000.0f, new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
+			rotTmp.rotate(-1.0f*diftime/1000.0f, new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
 		}
 		if(DOWN) {
-			rotTmp.rotate(1.0f*diftime/5000.0f, new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
+			rotTmp.rotate(1.0f*diftime/1000.0f, new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
 		}
 
 		rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
