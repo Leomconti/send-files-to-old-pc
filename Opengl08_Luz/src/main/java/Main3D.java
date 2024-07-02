@@ -431,11 +431,15 @@ public class Main3D {
 					if (target instanceof Enemy && checkCollision(projetil, target)) {
 						objectsToRemove.add(projetil);
 						objectsToRemove.add(target);
+						break;
 					}
 				}
 			}
 		}
-    }
+
+		// Remove objects marked for deletion
+		listaObjetos.removeAll(objectsToRemove);
+	}
 
 	private boolean checkCollision(Object3D obj1, Object3D obj2) {
 		float dx = obj1.x - obj2.x;
