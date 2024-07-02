@@ -92,7 +92,7 @@ public class Mapa3D extends Object3D {
 		float a = (a1+a2+a3+a4)/4.0f;
 		
 		if(a > (yt-rt) && a < (yt + rt) ) {
-			//System.out.println(" COLIDIU "+a+" "+yt+" "+rt);
+			System.out.println(" COLIDIU "+a+" "+yt+" "+rt);
 			return true;
 		}
 		else {
