@@ -94,7 +94,7 @@ public class Main3D {
     boolean mouseRightPressed = false;
 
     private float cameraDistance = -2.0f;
-    private float cameraHeight = 1.5f
+    private float cameraHeight = 1.5f;
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -214,11 +214,11 @@ public class Main3D {
 	
 	
   private void createEnemies(ObjModel enemyModel) {
-      float mapSize = 100.0f;
+      float mapSize = 1000.0f;
       float minHeight = 5.0f;
       float maxHeight = 20.0f;
 
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 10; i++) {
           float x = rnd.nextFloat() * mapSize - mapSize / 2;
           float y = rnd.nextFloat() * (maxHeight - minHeight) + minHeight;
           float z = rnd.nextFloat() * mapSize - mapSize / 2;
@@ -305,7 +305,7 @@ public class Main3D {
 		float angle = 0;
 		long ultimoTempo = System.currentTimeMillis();
 		long lastSpawnTime = ultimoTempo;
-		long spawnInterval = 30000;
+		long spawnInterval = 10000;
 
 		while (!glfwWindowShouldClose(window)) {
 			long diftime = System.currentTimeMillis()-ultimoTempo;
