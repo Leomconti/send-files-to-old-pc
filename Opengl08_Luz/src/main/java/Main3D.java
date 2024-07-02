@@ -309,6 +309,7 @@ public class Main3D {
 			if (deltaTime >= spawnInterval) {
 				createEnemies(mig29);  // Call your method to create enemies
 				lastSpawnTime = currentTime;  // Reset the last spawn time
+				System.out.println("Spawned enemy hord!!!");
 			}
 			
 			gameUpdate(diftime);
