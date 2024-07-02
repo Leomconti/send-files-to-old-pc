@@ -93,6 +93,9 @@ public class Main3D {
     boolean mouseLeftPressed = false;
     boolean mouseRightPressed = false;
 
+    private float cameraDistance = 2.0f; // Distance behind the player
+    private float cameraHeight = 0.5f; // Height above the player
+
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
@@ -376,9 +379,9 @@ private void gameUpdate(long diftime) {
     m29.Front = cameraVectorFront;
     m29.UP = cameraVectorUP;
     m29.Right = cameraVectorRight;
-    m29.x = cameraPos.x - cameraVectorFront.x * 2;
-    m29.y = cameraPos.y - cameraVectorFront.y * 2 - 0.5f; // Adjusted for centering
-    m29.z = cameraPos.z - cameraVectorFront.z * 2;
+    m29.x = cameraPos.x + cameraVectorFront.x * cameraDistance;
+    m29.y = cameraPos.y + cameraVectorFront.y * cameraDistance - cameraHeight;
+    m29.z = cameraPos.z + cameraVectorFront.z * cameraDistance;
 
     Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
 
@@ -451,6 +454,11 @@ private void createProjectile(float x, float y, float z, float velocidade_projet
 
 		cameraVectorUP = Utils3D.crossProduct(cameraVectorRight, cameraVectorFront);
 		Utils3D.vec3dNormilize(cameraVectorUP);
+
+		// Update camera position relative to the player
+		cameraPos.x = m29.x - cameraVectorFront.x * cameraDistance;
+		cameraPos.y = m29.y - cameraVectorFront.y * cameraDistance + cameraHeight;
+		cameraPos.z = m29.z - cameraVectorFront.z * cameraDistance;
 	}
 
 	private void gameRender() {
