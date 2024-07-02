@@ -405,9 +405,9 @@ private void gameUpdate(long diftime) {
                     new Vector3f(cameraPos.x, cameraPos.y, cameraPos.z), null).lengthSquared() > 1000) {
                 objectsToRemove.add(projetil);
             } else {
-                // Check collision with enemies
                 for (Object3D target : listaObjetos) {
                     if (target instanceof Enemy && checkCollision(projetil, target)) {
+						target.SimulaSe(diftime);
                         objectsToRemove.add(projetil);
                         objectsToRemove.add(target);
                         break;
