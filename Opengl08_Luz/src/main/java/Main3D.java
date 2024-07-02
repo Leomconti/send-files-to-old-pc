@@ -215,15 +215,15 @@ public class Main3D {
 
 	private void createEnemies(ObjModel enemyModel) {
 		float mapSize = 1000.0f;
-		float minHeight = 5.0f;
-		float maxHeight = 20.0f;
+		float formationHeight = 15.0f; // Fixed height for the formation
+		float formationRadius = 50.0f; // Radius of the circular formation
 
 		for (int i = 0; i < 10; i++) {
-			float x = rnd.nextFloat() * mapSize - mapSize / 2;
-			float y = rnd.nextFloat() * (maxHeight - minHeight) + minHeight;
-			float z = rnd.nextFloat() * mapSize - mapSize / 2;
+			float angle = (float) (i * 2 * Math.PI / 10);
+			float x = (float) (Math.cos(angle) * formationRadius);
+			float z = (float) (Math.sin(angle) * formationRadius);
 
-			Enemy enemy = new Enemy(x, y, z, 0.01f);
+			Enemy enemy = new Enemy(x, formationHeight, z, 0.01f);
 			enemy.model = enemyModel;
 			listaObjetos.add(enemy);
 		}
@@ -442,6 +442,12 @@ public class Main3D {
 					}
 				}
 			}
+		}
+
+		for (Object3D obj : listaObjetos) {
+		    if (obj instanceof Enemy) {
+		        ((Enemy) obj).moveTowardsPlayer(m29.x, m29.y, m29.z);
+		    }
 		}
 
 	}
