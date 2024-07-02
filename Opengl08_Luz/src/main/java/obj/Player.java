@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 
 import java.nio.FloatBuffer;
 
+import dados.Constantes;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11.*;

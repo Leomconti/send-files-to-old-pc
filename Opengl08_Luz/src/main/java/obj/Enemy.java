@@ -21,7 +21,7 @@ public class Enemy extends Object3D {
     public Vector4f UP = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
     public Vector4f Right = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
     
-    private float speed = 2.0f; // Adjust this value to change enemy speed
+    private float speed = 0.01f; // Adjust this value to change enemy speed
     
     public Enemy(float x, float y, float z, float r) {
         super(x, y, z);
@@ -57,6 +57,7 @@ public class Enemy extends Object3D {
         direction.y /= length;
         direction.z /= length;
 
+        speed = (float) Math.random() * 0.01f + 0.01f;
         x += direction.x * speed;
         y += direction.y * speed;
         z += direction.z * speed;
