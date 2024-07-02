@@ -426,7 +426,7 @@ public class Main3D {
 			Object3D obj1 = listaObjetos.get(i);
 			obj1.SimulaSe(diftime);
 
-			if (obj1.vivo == false) {
+			if (!obj1.vivo) {
 				listaObjetos.remove(i);
 				i--;
 				continue;
@@ -438,16 +438,21 @@ public class Main3D {
 					if (obj2 instanceof Enemy && checkCollision(obj1, obj2)) {
 						((Projetil) obj1).morrendo = true;
 						obj2.vivo = false;
+						createExplosion(obj2.x, obj2.y, obj2.z);
 						break;
 					}
 				}
 			}
-		}
 
-		for (Object3D obj : listaObjetos) {
-		    if (obj instanceof Enemy) {
-		        ((Enemy) obj).moveTowardsPlayer(m29.x, m29.y, m29.z);
-		    }
+			if (obj1 instanceof Enemy) {
+				if (checkCollision(m29, obj1)) {
+					obj1.vivo = false;
+					createExplosion(obj1.x, obj1.y, obj1.z);
+					System.out.println("Player collided with an enemy!");
+				} else {
+					((Enemy) obj1).moveTowardsPlayer(m29.x, m29.y, m29.z);
+				}
+			}
 		}
 
 	}
@@ -461,6 +466,14 @@ public class Main3D {
 		pj.model = vboBilbord;
 		pj.setRotation(cameraVectorFront, cameraVectorUP, cameraVectorRight);
 		listaObjetos.add(pj);
+	}
+
+	private void createExplosion(float x, float y, float z) {
+		Projetil explosion = new Projetil(x, y, z);
+		explosion.raio = 0.5f;
+		explosion.model = vboBilbord;
+		explosion.morrendo = true;
+		listaObjetos.add(explosion);
 	}
 
 	private boolean checkCollision(Object3D obj1, Object3D obj2) {
