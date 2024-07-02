@@ -78,4 +78,21 @@ public class Player extends Object3D {
 		
 		ang+=rotvel*diftime/1000.0f;
 	}
+	
+	public void rotateAroundAxis(Vector4f axis, float angle) {
+	    Matrix4f rotation = new Matrix4f();
+	    rotation.rotate(angle, new Vector3f(axis.x, axis.y, axis.z));
+	    
+	    Vector4f newFront = new Vector4f();
+	    Vector4f newUp = new Vector4f();
+	    Vector4f newRight = new Vector4f();
+	    
+	    rotation.transform(Front, newFront);
+	    rotation.transform(UP, newUp);
+	    rotation.transform(Right, newRight);
+	    
+	    Front.set(newFront);
+	    UP.set(newUp);
+	    Right.set(newRight);
+	}
 }

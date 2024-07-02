@@ -157,21 +157,20 @@ public class Main3D {
 		});
 
 		glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
-			float dx = (float) xpos - mouseX;
-			float dy = (float) ypos - mouseY;
-			mouseX = (float) xpos;
-			mouseY = (float) ypos;
-		
-			// Invert the horizontal camera rotation direction
-			float sensitivity = 0.1f;
-			viewAngY -= dx * sensitivity; // Here, change '+=' to '-=' to invert the control
-			viewAngX += dy * sensitivity;
-		
-			// Limit vertical rotation
-			viewAngX = Math.max(-90, Math.min(90, viewAngX));
-		
-			// Update camera vectors
-			updateCameraVectors();
+		    if (!mouseLeftPressed) {
+		        float dx = (float) xpos - mouseX;
+		        float dy = (float) ypos - mouseY;
+		        mouseX = (float) xpos;
+		        mouseY = (float) ypos;
+		    
+		        float sensitivity = 0.1f;
+		        viewAngY -= dx * sensitivity;
+		        viewAngX += dy * sensitivity;
+		    
+		        viewAngX = Math.max(-90, Math.min(90, viewAngX));
+		    
+		        updateCameraVectors();
+		    }
 		});
 		
 
@@ -338,45 +337,50 @@ public class Main3D {
 	long tirotimer = 0;
 
 private void gameUpdate(long diftime) {
-    float vel = 5.0f;
+    float dt = diftime / 1000.0f;
     tirotimer += diftime;
     angluz = 0;
-    float acceleration = 10.0f;
+    float playerAcceleration = 20.0f;
+    float playerMaxSpeed = 30.0f;
+    float playerRotationSpeed = 2.0f;
     
+    // Player acceleration
+    Vector3f acceleration = new Vector3f();
     if (mouseLeftPressed) {
-        cameraPos.x -= cameraVectorFront.x * acceleration * diftime / 1000.0f;
-        cameraPos.y -= cameraVectorFront.y * acceleration * diftime / 1000.0f;
-        cameraPos.z -= cameraVectorFront.z * acceleration * diftime / 1000.0f;
+        acceleration.x = -cameraVectorFront.x * playerAcceleration;
+        acceleration.y = -cameraVectorFront.y * playerAcceleration;
+        acceleration.z = -cameraVectorFront.z * playerAcceleration;
     }
 
-    // Q and E rotation around camera's front vector (roll)
-    Matrix4f rotTmp = new Matrix4f();
-    rotTmp.setIdentity();
-    float rotationSpeed = 1.0f * diftime / 1000.0f;
+    // Update player velocity
+    m29.vx += acceleration.x * dt;
+    m29.vy += acceleration.y * dt;
+    m29.vz += acceleration.z * dt;
+
+    // Limit player speed
+    float speed = (float) Math.sqrt(m29.vx * m29.vx + m29.vy * m29.vy + m29.vz * m29.vz);
+    if (speed > playerMaxSpeed) {
+        float scale = playerMaxSpeed / speed;
+        m29.vx *= scale;
+        m29.vy *= scale;
+        m29.vz *= scale;
+    }
+
+    // Update player position
+    m29.x += m29.vx * dt;
+    m29.y += m29.vy * dt;
+    m29.z += m29.vz * dt;
+
+    // Q and E rotation
     if (QBu) {
-        rotTmp.rotate(-rotationSpeed,
-                new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
+        m29.rotateAroundAxis(cameraVectorFront, -playerRotationSpeed * dt);
     }
     if (EBu) {
-        rotTmp.rotate(rotationSpeed,
-                new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
+        m29.rotateAroundAxis(cameraVectorFront, playerRotationSpeed * dt);
     }
-  
-    rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
-    rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
-    rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
-    
-    Utils3D.vec3dNormilize(cameraVectorFront);
-    Utils3D.vec3dNormilize(cameraVectorRight);
-    Utils3D.vec3dNormilize(cameraVectorUP);
 
-    Vector4f t = new Vector4f(cameraPos.dot(cameraPos, cameraVectorRight), cameraPos.dot(cameraPos, cameraVectorUP),
-            cameraPos.dot(cameraPos, cameraVectorFront), 1.0f);
-    view = Utils3D.setLookAtMatrix(t, cameraVectorFront, cameraVectorUP, cameraVectorRight);
-    Matrix4f transf = new Matrix4f();
-    transf.setIdentity();
-    transf.translate(new Vector3f(1, 1, 0));
-    view.mul(transf, view, view);
+    // Update camera position relative to the player
+    updateCameraVectors();
 
     m29.raio = 0.01f;
     m29.Front = cameraVectorFront;
