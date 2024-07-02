@@ -16,11 +16,11 @@ public class Enemy extends Object3D {
     
     FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
     public float rotvel = 0;
-    
+   	public boolean morrendo = false; 
     public Vector4f Front = new Vector4f(0.0f, 0.0f, -1.0f, 1.0f);
     public Vector4f UP = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
     public Vector4f Right = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
-    
+    public bool explodindo = false;
     private float speed = 0.01f; // Adjust this value to change enemy speed
     
     public Enemy(float x, float y, float z, float r) {
@@ -69,5 +69,18 @@ public class Enemy extends Object3D {
         Utils3D.vec3dNormilize(Right);
         UP = Utils3D.crossProduct(Front, Right);
         Utils3D.vec3dNormilize(UP);
+
+        if (morrendo && !explodindo) {
+            timermorrendo += diftime;
+            explodindo = true;
+            // Limit the explosion size
+            float maxExplosionSize = raio * 5; // Adjust this value as needed
+            raio = Math.min(raio * ((diftime / 400.0f) + 1), maxExplosionSize);
+            if (timermorrendo > 1000) {
+                vivo = false;
+            }
+        }
     }
+
+
 }

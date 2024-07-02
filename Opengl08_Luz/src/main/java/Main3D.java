@@ -446,6 +446,7 @@ public class Main3D {
 			if (obj1 instanceof Enemy) {
 				if (checkCollision(m29, obj1)) {
 					obj1.vivo = false;
+					obj1.morrendo = true;
 					System.out.println("Player collided with an enemy!");
 				} else {
 					((Enemy) obj1).moveTowardsPlayer(m29.x, m29.y, m29.z);
@@ -466,13 +467,6 @@ public class Main3D {
 		listaObjetos.add(pj);
 	}
 
-	private void createExplosion(float x, float y, float z) {
-		Projetil explosion = new Projetil(x, y, z);
-		explosion.raio = 0.5f;
-		explosion.model = vboBilbord;
-		explosion.morrendo = true;
-		listaObjetos.add(explosion);
-	}
 
 	private boolean checkCollision(Object3D obj1, Object3D obj2) {
 	    float dx = obj1.x - obj2.x;
@@ -484,12 +478,7 @@ public class Main3D {
 	    float radiusSum = obj1.raio + obj2.raio;
 	    float radiusSumSquared = radiusSum * radiusSum;
 
-<<<<<<< Updated upstream
-	    return distanceSquared < radiusSumSquared;
-=======
-	    // Check if the distance between the centers is less than the sum of the radii
-	    return distanceSquared < radiusSumSquared + 5;
->>>>>>> Stashed changes
+	    return distanceSquared < radiusSumSquared + 5; // pra dar um range legal
 	}
 
 
