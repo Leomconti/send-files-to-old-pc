@@ -89,9 +89,9 @@ public class Main3D {
 	
 	double angluz = 0;
 
-    private float mouseX, mouseY;
-    private boolean mouseLeftPressed = false;
-    private boolean mouseRightPressed = false;
+    float mouseX, mouseY;
+    boolean mouseLeftPressed = false;
+    boolean mouseRightPressed = false;
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -297,13 +297,19 @@ public class Main3D {
 		long lasttime = System.currentTimeMillis();
 
 		float angle = 0;
-
-		
 		long ultimoTempo = System.currentTimeMillis();
+
 		while (!glfwWindowShouldClose(window)) {
-			
 			long diftime = System.currentTimeMillis()-ultimoTempo;
 			ultimoTempo = System.currentTimeMillis();
+
+			long currentTime = System.currentTimeMillis();
+			long deltaTime = currentTime - lastSpawnTime;
+
+			if (deltaTime >= spawnInterval) {
+				createEnemies(mig29);  // Call your method to create enemies
+				lastSpawnTime = currentTime;  // Reset the last spawn time
+			}
 			
 			gameUpdate(diftime);
 			gameRender();
