@@ -302,9 +302,14 @@ public class Main3D {
 			diftime = System.currentTimeMillis()-ultimoTempo;
 			ultimoTempo = System.currentTimeMillis();
 
+			long currentTime = System.currentTimeMillis();
+			long deltaTime = currentTime - lastSpawnTime;
 
-
-
+			if (deltaTime >= spawnInterval) {
+				createEnemies(mig29);  // Call your method to create enemies
+				lastSpawnTime = currentTime;  // Reset the last spawn time
+				System.out.println("Spawned enemy hord!!!");
+			}
 			gameUpdate();
 			gameRender();
 
@@ -437,7 +442,7 @@ public class Main3D {
 					Object3D obj2 = listaObjetos.get(j);
 					if (obj2 instanceof Enemy && checkCollision(obj1, obj2)) {
 						((Projetil) obj1).morrendo = true;
-						obj2.vivo = false;
+						((Enemy) obj2).morrendo = true;
 						break;
 					}
 				}
@@ -477,7 +482,7 @@ public class Main3D {
 	    float radiusSum = obj1.raio + obj2.raio;
 	    float radiusSumSquared = radiusSum * radiusSum;
 
-	    return distanceSquared < radiusSumSquared + 5; // pra dar um range legal
+	    return distanceSquared < radiusSumSquared + 2; // pra dar um range legal
 	}
 
 
