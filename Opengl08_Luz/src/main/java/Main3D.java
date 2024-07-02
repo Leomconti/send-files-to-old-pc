@@ -332,9 +332,22 @@ public class Main3D {
 		tirotimer += diftime;
 		angluz = 0;
 
-		cameraPos.x -= cameraVectorFront.x*speed*diftime/1000.0f;
-		cameraPos.y -= cameraVectorFront.y*speed*diftime/1000.0f;
-		cameraPos.z -= cameraVectorFront.z*speed*diftime/1000.0f;
+		float newCameraPosX = cameraPos.x - cameraVectorFront.x * speed * diftime / 1000.0f;
+		float newCameraPosY = cameraPos.y - cameraVectorFront.y * speed * diftime / 1000.0f;
+		float newCameraPosZ = cameraPos.z - cameraVectorFront.z * speed * diftime / 1000.0f;
+
+		boolean camera_collided = Constantes.mapa.testaColisao(
+		    newCameraPosX + cameraVectorFront.x * cameraDistance,
+		    newCameraPosY + cameraVectorFront.y * cameraDistance - cameraHeight,
+		    newCameraPosZ + cameraVectorFront.z * cameraDistance,
+		    0.1f
+		);
+
+		if (!camera_collided) {
+		    cameraPos.x = newCameraPosX;
+		    cameraPos.y = newCameraPosY;
+		    cameraPos.z = newCameraPosZ;
+		}
 
 		// Q and E rotation around camera's front vector (roll)
 		rotTmp.setIdentity();
@@ -395,7 +408,10 @@ public class Main3D {
 
 
 
-		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
+		boolean player_collided = Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
+		if (player_collided) {
+			System.out.println("Player collided with the map");
+		}
 
 		// ATIRAR
 		if (FIRE && tirotimer >= 100) {
