@@ -214,13 +214,16 @@ public class Main3D {
 	
 	
   private void createEnemies(ObjModel enemyModel) {
+      float mapSize = 100.0f;
+      float minHeight = 5.0f;
+      float maxHeight = 20.0f;
+
       for (int i = 0; i < 5; i++) {
-          Enemy enemy = new Enemy(
-              rnd.nextFloat() * 20 - 10,
-              rnd.nextFloat() * 10 + 5,
-              rnd.nextFloat() * 20 - 10,
-              0.01f  // Increased size for visibility
-          );
+          float x = rnd.nextFloat() * mapSize - mapSize / 2;
+          float y = rnd.nextFloat() * (maxHeight - minHeight) + minHeight;
+          float z = rnd.nextFloat() * mapSize - mapSize / 2;
+
+          Enemy enemy = new Enemy(x, y, z, 0.01f);
           enemy.model = enemyModel;
           listaObjetos.add(enemy);
       }
