@@ -445,8 +445,7 @@ public class Main3D {
 
 			if (obj1 instanceof Enemy) {
 				if (checkCollision(m29, obj1)) {
-					obj1.vivo = false;
-					obj1.morrendo = true;
+					((Enemy) obj1).morrendo = true;
 					System.out.println("Player collided with an enemy!");
 				} else {
 					((Enemy) obj1).moveTowardsPlayer(m29.x, m29.y, m29.z);

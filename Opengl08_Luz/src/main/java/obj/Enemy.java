@@ -1,4 +1,5 @@
 package obj;
+import dados.Constantes;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
@@ -6,6 +7,9 @@ import shaders.ShaderProgram;
 import util.Utils3D;
 import java.nio.FloatBuffer;
 import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBindTexture;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import Model.Model;
@@ -13,6 +17,7 @@ import Model.Model;
 public class Enemy extends Object3D {
     public Vector3f cor = new Vector3f();
     public Model model = null;
+    public long timermorrendo = 0;
     
     FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
     public float rotvel = 0;
@@ -20,8 +25,8 @@ public class Enemy extends Object3D {
     public Vector4f Front = new Vector4f(0.0f, 0.0f, -1.0f, 1.0f);
     public Vector4f UP = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
     public Vector4f Right = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
-    public bool explodindo = false;
-    private float speed = 0.01f; // Adjust this value to change enemy speed
+    public boolean explodindo = false;
+    private float speed = 0.05f; // Adjust this value to change enemy speed
     
     public Enemy(float x, float y, float z, float r) {
         super(x, y, z);
@@ -39,7 +44,13 @@ public class Enemy extends Object3D {
         int modellocation = glGetUniformLocation(shader.programID, "model");
         modelm.storeTranspose(matrixBuffer);
         matrixBuffer.flip();
-        glUniformMatrix4fv(modellocation, false, matrixBuffer);    
+        glUniformMatrix4fv(modellocation, false, matrixBuffer);
+
+        if(morrendo) {
+            glBindTexture(GL_TEXTURE_2D, Constantes.texturaExplosao);
+        }else {
+            glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
+        }
         
         model.draw();
     }
@@ -48,6 +59,17 @@ public class Enemy extends Object3D {
     public void SimulaSe(long diftime) {
         super.SimulaSe(diftime);
         float dt = diftime / 1000.0f;
+
+        if (morrendo && !explodindo) {
+            timermorrendo += diftime;
+            // Limit the explosion size
+            float maxExplosionSize = raio * 5; // Adjust this value as needed
+            raio = Math.min(raio * ((diftime / 400.0f) + 1), maxExplosionSize);
+            if (timermorrendo > 1000) {
+                vivo = false;
+            }
+        }
+
     }
 
     public void moveTowardsPlayer(float playerX, float playerY, float playerZ) {
@@ -70,16 +92,7 @@ public class Enemy extends Object3D {
         UP = Utils3D.crossProduct(Front, Right);
         Utils3D.vec3dNormilize(UP);
 
-        if (morrendo && !explodindo) {
-            timermorrendo += diftime;
-            explodindo = true;
-            // Limit the explosion size
-            float maxExplosionSize = raio * 5; // Adjust this value as needed
-            raio = Math.min(raio * ((diftime / 400.0f) + 1), maxExplosionSize);
-            if (timermorrendo > 1000) {
-                vivo = false;
-            }
-        }
+
     }
 
 

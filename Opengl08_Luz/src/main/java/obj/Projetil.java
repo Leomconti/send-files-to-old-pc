@@ -64,14 +64,14 @@ public class Projetil extends Object3D {
 		//System.out.println("bilbloc "+bilbloc);
 		//System.out.println("modellocation "+modellocation);
 		
+
+		
+		model.draw();
 		if(morrendo) {
 			glBindTexture(GL_TEXTURE_2D, Constantes.texturaExplosao);
 		}else {
 			glBindTexture(GL_TEXTURE_2D, Constantes.texturaTiro);
 		}
-		
-		model.draw();
-		
 		glUniform1i(bilbloc,0);
 	}
 	
