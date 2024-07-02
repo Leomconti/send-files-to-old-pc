@@ -298,6 +298,8 @@ public class Main3D {
 
 		float angle = 0;
 		long ultimoTempo = System.currentTimeMillis();
+		long lastSpawnTime = ultimoTempo;
+		long spawnInterval = 30000;
 
 		while (!glfwWindowShouldClose(window)) {
 			long diftime = System.currentTimeMillis()-ultimoTempo;
@@ -354,9 +356,9 @@ private void gameUpdate(long diftime) {
                 new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
     }
   
-    rotTmp.transform(cameraVectorFront, cameraVectorFront);
-    rotTmp.transform(cameraVectorRight, cameraVectorRight);
-    rotTmp.transform(cameraVectorUP, cameraVectorUP);
+    rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
+    rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
+    rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
     
     Utils3D.vec3dNormilize(cameraVectorFront);
     Utils3D.vec3dNormilize(cameraVectorRight);
