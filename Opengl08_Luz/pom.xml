@@ -6,7 +6,7 @@
   <name>Opengl08_Luz</name>
   <properties>
 	<lwjgl.version>3.3.3</lwjgl.version>
-	<lwjgl.natives>natives-windows</lwjgl.natives>
+	<lwjgl.natives>natives-linux</lwjgl.natives>
   </properties>
 
 	<dependencyManagement>

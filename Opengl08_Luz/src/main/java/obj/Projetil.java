@@ -30,7 +30,7 @@ public class Projetil extends Object3D {
 	
 	long timervida = 0;
 	
-	boolean morrendo = false;
+	public boolean morrendo = false;
 	long timermorrendo = 0;
 	
 	public Projetil(float x, float y, float z) {

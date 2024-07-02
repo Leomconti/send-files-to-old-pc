@@ -46,55 +46,36 @@ public class Main3D {
 
 	// The window handle
 	private long window;
-	
 	float viewAngX = 0;
 	float viewAngY = 0;
 	float scale = 1.0f;
-	
 	public Random rnd = new Random();
-	
+	long diftime;
 	VboCube vboc;
 	VboBilboard vboBilbord;
 	StaticShader shader;
 	ArrayList<Object3D> listaObjetos = new ArrayList<>();
-	
-	
 	Vector4f cameraPos = new  Vector4f(0.0f,10.0f, 0.0f,1.0f);
 	Vector4f cameraVectorFront = new Vector4f(0.0f, 0.0f, -1.0f,1.0f);
 	Vector4f cameraVectorUP = new Vector4f(0.0f, 1.0f, 0.0f,1.0f);
 	Vector4f cameraVectorRight = new Vector4f(1.0f, 0.0f, 0.0f,1.0f);
-	
 	Matrix4f view = new Matrix4f();
-	
-	boolean UP = false;
-	boolean DOWN = false;
-	boolean LEFT = false;
-	boolean RIGHT = false;
-	
-	
 	boolean QBu = false;
 	boolean EBu = false;
-
 	boolean FIRE = false;
-	
+	boolean WBu = false;
+	boolean SBu = false;
 	boolean enemiesCreated = false;
-	
-	Matrix4f cameraMatrix = new Matrix4f();
-	
-
 	FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
-	
 	Cubo3D umcubo;
 	Player m29;
-	
+	Matrix4f rotTmp = new Matrix4f();
 	double angluz = 0;
-
-    float mouseX, mouseY;
-    boolean mouseLeftPressed = false;
-    boolean mouseRightPressed = false;
-
-    private float cameraDistance = -2.0f;
-    private float cameraHeight = 1.5f;
+	float mouseX, mouseY;
+	boolean mouseLeftPressed = false;
+	boolean mouseRightPressed = false;
+	private float cameraDistance = -2.0f;
+	private float cameraHeight = 1.5f;
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -144,6 +125,12 @@ public class Main3D {
 				if (key == GLFW_KEY_E) {
 					EBu = true;
 				}
+				if(key == GLFW_KEY_W) {
+					WBu = true;
+				}
+				if(key == GLFW_KEY_S) {
+					SBu = true;
+				}
 			}
 			if (action == GLFW_RELEASE) {
 				if (key == GLFW_KEY_Q) {
@@ -151,6 +138,12 @@ public class Main3D {
 				}
 				if (key == GLFW_KEY_E) {
 					EBu = false;
+				}
+				if(key == GLFW_KEY_W) {
+					WBu = false;
+				}
+				if(key == GLFW_KEY_S) {
+					SBu = false;
 				}
 			}
 			;
@@ -161,19 +154,26 @@ public class Main3D {
 			float dy = (float) ypos - mouseY;
 			mouseX = (float) xpos;
 			mouseY = (float) ypos;
-		
+
 			// Invert the horizontal camera rotation direction
 			float sensitivity = 0.1f;
 			viewAngY -= dx * sensitivity; // Here, change '+=' to '-=' to invert the control
 			viewAngX += dy * sensitivity;
-		
-			// Limit vertical rotation
-			viewAngX = Math.max(-90, Math.min(90, viewAngX));
-		
+
+			// Clamp the vertical camera rotation
+			if (viewAngX > 89.0f) {
+				viewAngX = 89.0f;
+			}
+
+			boolean RIGHT = dx < 0;
+			boolean LEFT = dx > 0;
+			boolean UP = dy < 0;
+			boolean DOWN = dy > 0;
+
 			// Update camera vectors
-			updateCameraVectors();
+			updateCameraVectors(RIGHT, LEFT, UP, DOWN);
 		});
-		
+
 
 		glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
 			if (button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -211,23 +211,23 @@ public class Main3D {
 		glfwShowWindow(window);
 
 	}
-	
-	
-  private void createEnemies(ObjModel enemyModel) {
-      float mapSize = 1000.0f;
-      float minHeight = 5.0f;
-      float maxHeight = 20.0f;
 
-      for (int i = 0; i < 10; i++) {
-          float x = rnd.nextFloat() * mapSize - mapSize / 2;
-          float y = rnd.nextFloat() * (maxHeight - minHeight) + minHeight;
-          float z = rnd.nextFloat() * mapSize - mapSize / 2;
 
-          Enemy enemy = new Enemy(x, y, z, 0.01f);
-          enemy.model = enemyModel;
-          listaObjetos.add(enemy);
-      }
-  }
+	private void createEnemies(ObjModel enemyModel) {
+		float mapSize = 1000.0f;
+		float minHeight = 5.0f;
+		float maxHeight = 20.0f;
+
+		for (int i = 0; i < 10; i++) {
+			float x = rnd.nextFloat() * mapSize - mapSize / 2;
+			float y = rnd.nextFloat() * (maxHeight - minHeight) + minHeight;
+			float z = rnd.nextFloat() * mapSize - mapSize / 2;
+
+			Enemy enemy = new Enemy(x, y, z, 0.01f);
+			enemy.model = enemyModel;
+			listaObjetos.add(enemy);
+		}
+	}
 
 	private void loop() {
 		// This line is critical for LWJGL's interoperation with GLFW's
@@ -239,65 +239,56 @@ public class Main3D {
 		GL.createCapabilities();
 
 		view.setIdentity();
-		
+
 		vboc = new VboCube();
 		vboc.load();
 		vboBilbord = new VboBilboard();
 		vboBilbord.load();
 		shader = new StaticShader();
-		
-		//Cubo3D cubo = new Cubo3D(0.0f, 0.0f, -1.0f, 0.2f);
-		//cubo.vbocube = vboc;
-		
-		//ObjModel x35 = new ObjModel();
-		//x35.loadObj("x-35_obj.obj");
-		//x35.load();
-		
+
+
 		System.out.println("------> Carrega MIG");
 		ObjModel mig29 = new ObjModel();
 		mig29.loadObj("Mig_29_obj.obj");
 		mig29.load();
-		
+
 		if (!enemiesCreated) {
 			createEnemies(mig29);
 			enemiesCreated = true;
 		}
-		
+
 		m29 = new Player(0, 0, 0, 0.01f);
 		m29.model = mig29;
-		
+
 		ObjHTGsrtm model = new ObjHTGsrtm();
 		model.load();
-		
+
 		Constantes.mapa = new Mapa3D(-10.0f, 0.0f, -10.0f, 10);
 		Constantes.mapa.model = model;
-		
+
 		umcubo = new Cubo3D(0.0f, 0.0f, 0.8f, 0.1f);
 		umcubo.model = vboc;
 
-		
-		BufferedImage imggato = TextureLoader.loadImage("texturaGato.jpeg");
-		Constantes.tgato = TextureLoader.loadTexture(imggato);
-		System.out.println("tgato "+Constantes.tgato);
-		
+
+
 		BufferedImage imgmulttexture = TextureLoader.loadImage("multtexture.png");
 		Constantes.tmult = TextureLoader.loadTexture(imgmulttexture);
 		System.out.println("tmult "+Constantes.tmult);
-		
-		
+
+
 		BufferedImage texturamig = TextureLoader.loadImage("TexturaMig01.png");
 		Constantes.txtmig = TextureLoader.loadTexture(texturamig);
 		System.out.println("tmult "+Constantes.tmult);
-		
+
 		BufferedImage imgtexttiro = TextureLoader.loadImage("texturaTiro.png");
 		Constantes.texturaTiro = TextureLoader.loadTexture(imgtexttiro);
 		System.out.println("texturaTiro "+Constantes.texturaTiro);
-		
+
 		BufferedImage imgtextexp = TextureLoader.loadImage("texturaExplosao.png");
 		Constantes.texturaExplosao = TextureLoader.loadTexture(imgtextexp);
 		System.out.println("texturaExplosao "+Constantes.texturaExplosao);
-		
-		
+
+
 
 		int frame = 0;
 		long lasttime = System.currentTimeMillis();
@@ -308,22 +299,16 @@ public class Main3D {
 		long spawnInterval = 10000;
 
 		while (!glfwWindowShouldClose(window)) {
-			long diftime = System.currentTimeMillis()-ultimoTempo;
+			diftime = System.currentTimeMillis()-ultimoTempo;
 			ultimoTempo = System.currentTimeMillis();
 
-			long currentTime = System.currentTimeMillis();
-			long deltaTime = currentTime - lastSpawnTime;
 
-			if (deltaTime >= spawnInterval) {
-				createEnemies(mig29);  // Call your method to create enemies
-				lastSpawnTime = currentTime;  // Reset the last spawn time
-				System.out.println("Spawned enemy hord!!!");
-			}
-			
-			gameUpdate(diftime);
+
+
+			gameUpdate();
 			gameRender();
-			
-			
+
+
 			frame++;
 			long actualTime = System.currentTimeMillis();
 			if ((lasttime / 1000) != (actualTime / 1000)) {
@@ -336,132 +321,152 @@ public class Main3D {
 	}
 
 	long tirotimer = 0;
+	float speed = 5.0f;
+	float acceleration = 0.1f;
+	float deceleration = 0.05f;
+	float maxSpeed = 10.0f;
+	float constSpeed = 3.0f;
+	float minSpeed = 1.0f;
 
-private void gameUpdate(long diftime) {
-    float vel = 5.0f;
-    tirotimer += diftime;
-    angluz = 0;
-    float acceleration = 10.0f;
-    
-    if (mouseLeftPressed) {
-        cameraPos.x -= cameraVectorFront.x * acceleration * diftime / 1000.0f;
-        cameraPos.y -= cameraVectorFront.y * acceleration * diftime / 1000.0f;
-        cameraPos.z -= cameraVectorFront.z * acceleration * diftime / 1000.0f;
-    }
+	private void gameUpdate() {
+		tirotimer += diftime;
+		angluz = 0;
 
-    // Q and E rotation around camera's front vector (roll)
-    Matrix4f rotTmp = new Matrix4f();
-    rotTmp.setIdentity();
-    float rotationSpeed = 1.0f * diftime / 1000.0f;
-    if (QBu) {
-        rotTmp.rotate(-rotationSpeed,
-                new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
-    }
-    if (EBu) {
-        rotTmp.rotate(rotationSpeed,
-                new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
-    }
-  
-    rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
-    rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
-    rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
-    
-    Utils3D.vec3dNormilize(cameraVectorFront);
-    Utils3D.vec3dNormilize(cameraVectorRight);
-    Utils3D.vec3dNormilize(cameraVectorUP);
+		cameraPos.x -= cameraVectorFront.x*speed*diftime/1000.0f;
+		cameraPos.y -= cameraVectorFront.y*speed*diftime/1000.0f;
+		cameraPos.z -= cameraVectorFront.z*speed*diftime/1000.0f;
 
-    Vector4f t = new Vector4f(cameraPos.dot(cameraPos, cameraVectorRight), cameraPos.dot(cameraPos, cameraVectorUP),
-            cameraPos.dot(cameraPos, cameraVectorFront), 1.0f);
-    view = Utils3D.setLookAtMatrix(t, cameraVectorFront, cameraVectorUP, cameraVectorRight);
-    Matrix4f transf = new Matrix4f();
-    transf.setIdentity();
-    transf.translate(new Vector3f(1, 1, 0));
-    view.mul(transf, view, view);
+		// Q and E rotation around camera's front vector (roll)
+		rotTmp.setIdentity();
+		float rotationSpeed = 2.0f * diftime / 1000.0f;
+		if (QBu) {
+			rotTmp.rotate(-rotationSpeed,
+					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
+		}
+		if (EBu) {
+			rotTmp.rotate(rotationSpeed,
+					new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
+		}
 
-    m29.raio = 0.01f;
-    m29.Front = cameraVectorFront;
-    m29.UP = cameraVectorUP;
-    m29.Right = cameraVectorRight;
-    m29.x = cameraPos.x + cameraVectorFront.x * cameraDistance;
-    m29.y = cameraPos.y + cameraVectorFront.y * cameraDistance - cameraHeight;
-    m29.z = cameraPos.z + cameraVectorFront.z * cameraDistance;
+		rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
+		rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
+		rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
 
-    Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
+		Utils3D.vec3dNormilize(cameraVectorFront);
+		Utils3D.vec3dNormilize(cameraVectorRight);
+		Utils3D.vec3dNormilize(cameraVectorUP);
 
-    // ATIRAR
-    if (FIRE && tirotimer >= 100) {
-        float velocidade_projetil = 14;
-        createProjectile(m29.x + cameraVectorRight.x * 0.5f, m29.y + cameraVectorRight.y * 0.5f, m29.z + cameraVectorRight.z * 0.5f, velocidade_projetil);
-        createProjectile(m29.x - cameraVectorRight.x * 0.5f, m29.y - cameraVectorRight.y * 0.5f, m29.z - cameraVectorRight.z * 0.5f, velocidade_projetil);
-        tirotimer = 0;
-    }
 
-    ArrayList<Object3D> objectsToRemove = new ArrayList<>();
+		if (WBu) {
+			speed += acceleration;
+			if (speed > maxSpeed) {
+				speed = maxSpeed;
+			}
+		} else if (SBu) {
+			speed -= acceleration;
+			if (speed < minSpeed) {
+				speed = minSpeed;
+			}
+		} else {
+			// Desaceleração gradual quando nenhuma tecla está pressionada
+			if (speed > constSpeed) {
+				speed -= deceleration;
+			}
+			if(speed < constSpeed) {
+				speed -= -(deceleration);
+			}
+		}
 
-    for (Object3D obj : listaObjetos) {
-        obj.SimulaSe(diftime);
-        if (!obj.vivo) {
-            objectsToRemove.add(obj);
-        } else if (obj instanceof Projetil) {
-            Projetil projetil = (Projetil) obj;
-            if (Vector3f.sub(new Vector3f(projetil.x, projetil.y, projetil.z),
-                    new Vector3f(cameraPos.x, cameraPos.y, cameraPos.z), null).lengthSquared() > 1000) {
-                objectsToRemove.add(projetil);
-            } else {
-                for (Object3D target : listaObjetos) {
-                    if (target instanceof Enemy && checkCollision(projetil, target)) {
-						target.SimulaSe(diftime);
-                        objectsToRemove.add(projetil);
-                        objectsToRemove.add(target);
-                        break;
-                    }
-                }
-            }
-        }
-    }
+		Vector4f t = new Vector4f(cameraPos.dot(cameraPos, cameraVectorRight), cameraPos.dot(cameraPos, cameraVectorUP),
+				cameraPos.dot(cameraPos, cameraVectorFront), 1.0f);
+		view = Utils3D.setLookAtMatrix(t, cameraVectorFront, cameraVectorUP, cameraVectorRight);
+		Matrix4f transf = new Matrix4f();
+		transf.setIdentity();
+		transf.translate(new Vector3f(1, 1, 0));
+		view.mul(transf, view, view);
 
-    // Remove objects marked for deletion
-    listaObjetos.removeAll(objectsToRemove);
-}
+		m29.raio = 0.01f;
+		m29.Front = cameraVectorFront;
+		m29.UP = cameraVectorUP;
+		m29.Right = cameraVectorRight;
+		m29.x = cameraPos.x + cameraVectorFront.x * cameraDistance;
+		m29.y = cameraPos.y + cameraVectorFront.y * cameraDistance - cameraHeight;
+		m29.z = cameraPos.z + cameraVectorFront.z * cameraDistance;
 
-private void createProjectile(float x, float y, float z, float velocidade_projetil) {
-    Projetil pj = new Projetil(x + cameraVectorUP.x * 0.2f, y + cameraVectorUP.y * 0.2f, z + cameraVectorUP.z * 0.2f);
-    pj.vx = -cameraVectorFront.x * velocidade_projetil;
-    pj.vy = -cameraVectorFront.y * velocidade_projetil;
-    pj.vz = -cameraVectorFront.z * velocidade_projetil;
-    pj.raio = 0.2f;
-    pj.model = vboBilbord;
-    pj.setRotation(cameraVectorFront, cameraVectorUP, cameraVectorRight);
-    listaObjetos.add(pj);
-}
+
+
+		Constantes.mapa.testaColisao(m29.x, m29.y, m29.z, 0.1f);
+
+		// ATIRAR
+		if (FIRE && tirotimer >= 100) {
+			float velocidade_projetil = 14;
+			createProjectile(m29.x + cameraVectorRight.x * 0.5f, m29.y + cameraVectorRight.y * 0.5f, m29.z + cameraVectorRight.z * 0.5f, velocidade_projetil);
+			createProjectile(m29.x - cameraVectorRight.x * 0.5f, m29.y - cameraVectorRight.y * 0.5f, m29.z - cameraVectorRight.z * 0.5f, velocidade_projetil);
+			tirotimer = 0;
+		}
+
+
+		for (int i = 0; i < listaObjetos.size(); i++) {
+			Object3D obj1 = listaObjetos.get(i);
+			obj1.SimulaSe(diftime);
+
+			if (obj1.vivo == false) {
+				listaObjetos.remove(i);
+				i--;
+				continue;
+			}
+
+			if (obj1 instanceof Projetil) {
+				for (int j = 0; j < listaObjetos.size(); j++) {
+					Object3D obj2 = listaObjetos.get(j);
+					if (obj2 instanceof Enemy && checkCollision(obj1, obj2)) {
+						((Projetil) obj1).morrendo = true;
+						obj2.vivo = false;
+						break;
+					}
+				}
+			}
+		}
+
+	}
+
+	private void createProjectile(float x, float y, float z, float velocidade_projetil) {
+		Projetil pj = new Projetil(x + cameraVectorUP.x * 0.2f, y + cameraVectorUP.y * 0.2f, z + cameraVectorUP.z * 0.2f);
+		pj.vx = -cameraVectorFront.x * velocidade_projetil;
+		pj.vy = -cameraVectorFront.y * velocidade_projetil;
+		pj.vz = -cameraVectorFront.z * velocidade_projetil;
+		pj.raio = 0.2f;
+		pj.model = vboBilbord;
+		pj.setRotation(cameraVectorFront, cameraVectorUP, cameraVectorRight);
+		listaObjetos.add(pj);
+	}
+
 	private boolean checkCollision(Object3D obj1, Object3D obj2) {
-		float dx = obj1.x - obj2.x;
-		float dy = obj1.y - obj2.y;
-		float dz = obj1.z - obj2.z;
-		float distance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-		return distance < (obj1.raio + obj2.raio);
+		float distance = (float) Math.sqrt(Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2) + Math.pow(obj1.z - obj2.z, 2));
+		return distance < obj1.raio + obj2.raio;
 	}
 
 
-	private void updateCameraVectors() {
-		float yaw = (float) Math.toRadians(viewAngY);
-		float pitch = (float) Math.toRadians(viewAngX);
+	private void updateCameraVectors(boolean RIGHT, boolean LEFT, boolean UP, boolean DOWN) {
+		rotTmp.setIdentity();
 
-		cameraVectorFront.x = (float) (Math.cos(yaw) * Math.cos(pitch));
-		cameraVectorFront.y = (float) Math.sin(pitch);
-		cameraVectorFront.z = (float) (Math.sin(yaw) * Math.cos(pitch));
-		Utils3D.vec3dNormilize(cameraVectorFront);
+		if(RIGHT) {
+			rotTmp.rotate(-1.0f*diftime/5000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
+		}
+		if(LEFT) {
+			rotTmp.rotate(1.0f*diftime/5000.0f, new Vector3f(cameraVectorUP.x, cameraVectorUP.y, cameraVectorUP.z));
+		}
+		if(UP) {
+			rotTmp.rotate(-1.0f*diftime/5000.0f, new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
+		}
+		if(DOWN) {
+			rotTmp.rotate(1.0f*diftime/5000.0f, new Vector3f(cameraVectorRight.x, cameraVectorRight.y, cameraVectorRight.z));
+		}
 
-		cameraVectorRight = Utils3D.crossProduct(cameraVectorFront, new Vector4f(0, 1, 0, 0));
-		Utils3D.vec3dNormilize(cameraVectorRight);
+		rotTmp.transform(rotTmp, cameraVectorFront, cameraVectorFront);
+		rotTmp.transform(rotTmp, cameraVectorRight, cameraVectorRight);
+		rotTmp.transform(rotTmp, cameraVectorUP, cameraVectorUP);
 
-		cameraVectorUP = Utils3D.crossProduct(cameraVectorRight, cameraVectorFront);
-		Utils3D.vec3dNormilize(cameraVectorUP);
-
-		// Update camera position relative to the player
-		cameraPos.x = m29.x - cameraVectorFront.x * cameraDistance;
-		cameraPos.y = m29.y - cameraVectorFront.y * cameraDistance + cameraHeight;
-		cameraPos.z = m29.z - cameraVectorFront.z * cameraDistance;
 	}
 
 	private void gameRender() {
@@ -473,55 +478,56 @@ private void createProjectile(float x, float y, float z, float velocidade_projet
 		glLoadIdentity();
 
 		shader.start();
-		
+
 		int projectionlocation = glGetUniformLocation(shader.programID, "projection");
 		//Matrix4f projection = setFrustum(-1f,1f,-1f,1f,1f,100.0f);
 		Matrix4f projection = Utils3D.setFrustum(-1.5f,1.5f,-1f,1f,1f,500.0f);
 		projection.storeTranspose(matrixBuffer);
 		matrixBuffer.flip();
 		glUniformMatrix4fv(projectionlocation, false, matrixBuffer);
-		
+
 		int lightpos = glGetUniformLocation(shader.programID, "lightPosition");
-		
+
 		float yl = (float)(Math.cos(angluz)*50.0);
 		float zl = (float)(Math.sin(angluz)*50.0);
-		
+
+
 		float vf[] = {0.0f,yl,zl,1.0f};
 		glUniform4fv(lightpos, vf);
-		
+
 		glEnable(GL_DEPTH_TEST);
-		
+
 		glActiveTexture(GL_TEXTURE0);
 		//glBindTexture(GL_TEXTURE_2D, tgato);
 		glBindTexture(GL_TEXTURE_2D, Constantes.tmult);
-		
-		
+
+
 		int loctexture = glGetUniformLocation(shader.programID, "tex");
 		glUniform1i(loctexture, 0);
-		
+
 		int viewlocation = glGetUniformLocation(shader.programID, "view");
 		view.storeTranspose(matrixBuffer);
 		matrixBuffer.flip();
 		glUniformMatrix4fv(viewlocation, false, matrixBuffer);
-		
+
 		Constantes.mapa.DesenhaSe(shader);
-		umcubo.DesenhaSe(shader);		
-		
+		umcubo.DesenhaSe(shader);
+
 		glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
 		m29.DesenhaSe(shader);
-    
-    for(int i = 0; i < listaObjetos.size(); i++) {
-        Object3D obj = listaObjetos.get(i);
-        if (obj instanceof Enemy) {
-            glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
-        } else if (obj instanceof Projetil) {
-            glBindTexture(GL_TEXTURE_2D, Constantes.texturaTiro);
-        }
-        obj.DesenhaSe(shader);
-    }
+
+		for(int i = 0; i < listaObjetos.size(); i++) {
+			Object3D obj = listaObjetos.get(i);
+			if (obj instanceof Enemy) {
+				glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
+			} else if (obj instanceof Projetil) {
+				glBindTexture(GL_TEXTURE_2D, Constantes.texturaTiro);
+			}
+			obj.DesenhaSe(shader);
+		}
 
 		shader.stop();
-		
+
 		glfwSwapBuffers(window); // swap the color buffers
 
 		// Poll for window events. The key callback above will only be
