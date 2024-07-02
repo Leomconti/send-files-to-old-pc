@@ -93,8 +93,8 @@ public class Main3D {
     boolean mouseLeftPressed = false;
     boolean mouseRightPressed = false;
 
-    private float cameraDistance = 2.0f; // Distance behind the player
-    private float cameraHeight = 0.5f; // Height above the player
+    private float cameraDistance = -2.0f;
+    private float cameraHeight = 1.5f
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -324,7 +324,7 @@ public class Main3D {
 			frame++;
 			long actualTime = System.currentTimeMillis();
 			if ((lasttime / 1000) != (actualTime / 1000)) {
-				System.out.println("FPS " + frame);
+				// System.out.println("FPS " + frame);
 				frame = 0;
 				lasttime = actualTime;
 			}
@@ -504,8 +504,8 @@ private void createProjectile(float x, float y, float z, float velocidade_projet
 		Constantes.mapa.DesenhaSe(shader);
 		umcubo.DesenhaSe(shader);		
 		
-    glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
-    m29.DesenhaSe(shader);
+		glBindTexture(GL_TEXTURE_2D, Constantes.txtmig);
+		m29.DesenhaSe(shader);
     
     for(int i = 0; i < listaObjetos.size(); i++) {
         Object3D obj = listaObjetos.get(i);
