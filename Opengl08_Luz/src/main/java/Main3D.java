@@ -477,8 +477,20 @@ public class Main3D {
 	}
 
 	private boolean checkCollision(Object3D obj1, Object3D obj2) {
-		float distance = (float) Math.sqrt(Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2) + Math.pow(obj1.z - obj2.z, 2));
-		return distance < obj1.raio + obj2.raio;
+	    // Calculate the vector between the centers of the two objects
+	    float dx = obj1.x - obj2.x;
+	    float dy = obj1.y - obj2.y;
+	    float dz = obj1.z - obj2.z;
+
+	    // Calculate the square of the distance between the centers
+	    float distanceSquared = dx * dx + dy * dy + dz * dz;
+
+	    // Calculate the square of the sum of the radii
+	    float radiusSum = obj1.raio + obj2.raio;
+	    float radiusSumSquared = radiusSum * radiusSum;
+
+	    // Check if the distance between the centers is less than the sum of the radii
+	    return distanceSquared < radiusSumSquared;
 	}
 
 
