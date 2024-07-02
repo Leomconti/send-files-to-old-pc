@@ -334,17 +334,26 @@ private void gameUpdate(long diftime) {
         cameraPos.z -= cameraVectorFront.z * acceleration * diftime / 1000.0f;
     }
 
-    // Integrate Q and E rotations with mouse rotation
+    // Q and E rotation around camera's front vector (roll)
+    Matrix4f rotTmp = new Matrix4f();
+    rotTmp.setIdentity();
     float rotationSpeed = 1.0f * diftime / 1000.0f;
     if (QBu) {
-        viewAngY += rotationSpeed * 50; // Adjust the multiplier as needed
+        rotTmp.rotate(-rotationSpeed,
+                new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
     }
     if (EBu) {
-        viewAngY -= rotationSpeed * 50; // Adjust the multiplier as needed
+        rotTmp.rotate(rotationSpeed,
+                new Vector3f(cameraVectorFront.x, cameraVectorFront.y, cameraVectorFront.z));
     }
-
-    // Update camera vectors based on new angles
-    updateCameraVectors();
+  
+    rotTmp.transform(cameraVectorFront, cameraVectorFront);
+    rotTmp.transform(cameraVectorRight, cameraVectorRight);
+    rotTmp.transform(cameraVectorUP, cameraVectorUP);
+    
+    Utils3D.vec3dNormilize(cameraVectorFront);
+    Utils3D.vec3dNormilize(cameraVectorRight);
+    Utils3D.vec3dNormilize(cameraVectorUP);
 
     Vector4f t = new Vector4f(cameraPos.dot(cameraPos, cameraVectorRight), cameraPos.dot(cameraPos, cameraVectorUP),
             cameraPos.dot(cameraPos, cameraVectorFront), 1.0f);
